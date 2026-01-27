@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ai-lib-python"
-version = "0.1.0"
+version = "0.2.0-dev"
 description = "Protocol Runtime for AI-Protocol - A Pythonic implementation for unified AI model interaction"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
@@ -36,9 +36,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+telemetry = [
+    "opentelemetry-api>=1.20",
+    "opentelemetry-sdk>=1.20",
+    "opentelemetry-exporter-otlp>=1.20",
+]
+tokenizer = [
+    "tiktoken>=0.5",
+]
 full = [
     "watchdog>=3.0",
     "keyring>=24.0",
+    "ai-lib-python[telemetry,tokenizer]",
 ]
 jupyter = [
     "ipywidgets>=8.0",
