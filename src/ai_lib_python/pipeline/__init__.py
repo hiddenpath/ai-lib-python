@@ -1,13 +1,43 @@
 """
 Pipeline layer - Stream processing operators.
 
-This module will implement the operator pipeline for processing streaming responses:
-- Decoder: Parses raw bytes into frames
-- Selector: Filters frames using JSONPath
-- Accumulator: Accumulates stateful data
-- EventMapper: Converts frames to unified events
+This module implements the operator pipeline for processing streaming responses:
+- Decoder: Parses raw bytes into frames (SSE, JSON Lines)
+- Selector: Filters frames using JSONPath expressions
+- Accumulator: Accumulates stateful data (tool call arguments)
+- EventMapper: Converts frames to unified streaming events
 
-Implementation planned for Phase 2.
+The pipeline is constructed dynamically from protocol manifests.
 """
 
-# Placeholder for Phase 2 implementation
+from ai_lib_python.pipeline.accumulate import ToolCallAccumulator
+from ai_lib_python.pipeline.base import Decoder, EventMapper, Pipeline, Transform
+from ai_lib_python.pipeline.decode import (
+    AnthropicSSEDecoder,
+    JsonLinesDecoder,
+    SSEDecoder,
+)
+from ai_lib_python.pipeline.event_map import (
+    AnthropicEventMapper,
+    DefaultEventMapper,
+    ProtocolEventMapper,
+)
+from ai_lib_python.pipeline.select import JsonPathSelector, PassThroughSelector
+
+__all__ = [
+    # Base abstractions
+    "AnthropicEventMapper",
+    "AnthropicSSEDecoder",
+    "Decoder",
+    "DefaultEventMapper",
+    "EventMapper",
+    # Implementations
+    "JsonLinesDecoder",
+    "JsonPathSelector",
+    "PassThroughSelector",
+    "Pipeline",
+    "ProtocolEventMapper",
+    "SSEDecoder",
+    "ToolCallAccumulator",
+    "Transform",
+]

@@ -1,12 +1,20 @@
 """
 Client layer - User-facing API.
 
-This module will implement:
-- AiClient: Main entry point
-- ChatBuilder: Fluent API for chat requests
-- Response handling
-
-Implementation planned for Phase 2.
+This module provides:
+- AiClient: Main entry point for AI model interaction
+- ChatBuilder: Fluent API for building chat requests
+- Response types and utilities
 """
 
-# Placeholder for Phase 2 implementation
+from ai_lib_python.client.builder import AiClientBuilder, ChatRequestBuilder
+from ai_lib_python.client.core import AiClient
+from ai_lib_python.client.response import CallStats, ChatResponse
+
+__all__ = [
+    "AiClient",
+    "AiClientBuilder",
+    "CallStats",
+    "ChatRequestBuilder",
+    "ChatResponse",
+]

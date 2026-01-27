@@ -123,6 +123,9 @@ ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # do not perform function calls in argument defaults
     "B905",   # zip without explicit strict
+    "SIM105", # contextlib.suppress doesn't work with yield
+    "ARG001", # unused function argument (reserved for future)
+    "ARG003", # unused class method argument (reserved for future)
 ]
 
 [tool.ruff.lint.isort]
