@@ -14,7 +14,6 @@ from ai_lib_python.resilience import (
     CircuitOpenError,
     CircuitState,
     FallbackChain,
-    FallbackConfig,
     JitterStrategy,
     RateLimiter,
     RateLimiterConfig,
@@ -279,11 +278,11 @@ class TestCircuitBreaker:
         breaker = CircuitBreaker(config)
 
         async def fail_op() -> str:
-            raise Exception("error")
+            raise RuntimeError("error")
 
         # Cause failures
         for _ in range(3):
-            with pytest.raises(Exception):
+            with pytest.raises(RuntimeError):
                 await breaker.execute(fail_op)
 
         assert breaker.is_open is True
@@ -295,10 +294,10 @@ class TestCircuitBreaker:
         breaker = CircuitBreaker(config)
 
         async def fail_op() -> str:
-            raise Exception("error")
+            raise RuntimeError("error")
 
         # Trip the circuit
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError):
             await breaker.execute(fail_op)
 
         assert breaker.is_open is True
@@ -319,10 +318,10 @@ class TestCircuitBreaker:
         breaker = CircuitBreaker(config)
 
         async def fail_op() -> str:
-            raise Exception("error")
+            raise RuntimeError("error")
 
         # Trip the circuit
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError):
             await breaker.execute(fail_op)
 
         assert breaker.is_open is True
