@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
     from ai_lib_python.protocol.manifest import ProtocolManifest
+    from ai_lib_python.resilience import ResilientConfig, ResilientExecutor
     from ai_lib_python.types.events import StreamingEvent
 
 
@@ -24,12 +25,21 @@ class AiClient:
     """Unified client for AI model interaction.
 
     AiClient is the main entry point for interacting with AI models.
-    It provides a protocol-driven, provider-agnostic interface.
+    It provides a protocol-driven, provider-agnostic interface with
+    built-in resilience patterns.
 
     Example:
         >>> client = await AiClient.create("anthropic/claude-3-5-sonnet")
         >>> response = await client.chat().messages([Message.user("Hello!")]).execute()
         >>> print(response.content)
+
+        >>> # With resilience
+        >>> client = await (
+        ...     AiClient.builder()
+        ...     .model("openai/gpt-4o")
+        ...     .production_ready()  # Enable all resilience patterns
+        ...     .build()
+        ... )
 
         >>> # Streaming
         >>> async for event in client.chat().messages(msgs).stream():
@@ -44,6 +54,7 @@ class AiClient:
         pipeline: Pipeline,
         model_id: str,
         fallbacks: list[str] | None = None,
+        executor: ResilientExecutor | None = None,
     ) -> None:
         """Initialize the client (internal use).
 
@@ -54,6 +65,7 @@ class AiClient:
         self._pipeline = pipeline
         self._model_id = model_id
         self._fallbacks = fallbacks or []
+        self._executor = executor
 
     @classmethod
     async def create(
@@ -117,7 +129,7 @@ class AiClient:
         base_url_override: str | None = None,
         timeout: float | None = None,
         hot_reload: bool = False,
-        max_inflight: int | None = None,
+        resilient_config: ResilientConfig | None = None,
     ) -> AiClient:
         """Internal creation method.
 
@@ -129,7 +141,7 @@ class AiClient:
             base_url_override: Base URL override
             timeout: Request timeout
             hot_reload: Enable hot reload
-            max_inflight: Max concurrent requests
+            resilient_config: Resilience configuration
 
         Returns:
             Configured AiClient
@@ -157,12 +169,20 @@ class AiClient:
         # Create pipeline
         pipeline = Pipeline.from_manifest(manifest)
 
+        # Create executor if resilience is configured
+        executor = None
+        if resilient_config is not None:
+            from ai_lib_python.resilience import ResilientExecutor
+
+            executor = ResilientExecutor(resilient_config, name=f"{manifest.id}/{model_id}")
+
         return cls(
             manifest=manifest,
             transport=transport,
             pipeline=pipeline,
             model_id=model_id,
             fallbacks=fallbacks,
+            executor=executor,
         )
 
     def chat(self) -> ChatRequestBuilder:
@@ -190,13 +210,19 @@ class AiClient:
         Returns:
             ChatResponse with the completion
         """
-        payload = builder.build_payload()
-        endpoint = self._manifest.get_chat_endpoint()
+        async def do_request() -> ChatResponse:
+            payload = builder.build_payload()
+            endpoint = self._manifest.get_chat_endpoint()
 
-        response = await self._transport.post(endpoint, json=payload)
-        data = response.json()
+            response = await self._transport.post(endpoint, json=payload)
+            data = response.json()
 
-        return self._parse_response(data)
+            return self._parse_response(data)
+
+        # Use executor if available for resilience
+        if self._executor:
+            return await self._executor.execute(do_request)
+        return await do_request()
 
     async def _execute_chat_with_stats(
         self, builder: ChatRequestBuilder
@@ -357,6 +383,40 @@ class AiClient:
     def manifest(self) -> ProtocolManifest:
         """Get the protocol manifest."""
         return self._manifest
+
+    @property
+    def is_resilient(self) -> bool:
+        """Check if resilience is enabled."""
+        return self._executor is not None
+
+    @property
+    def circuit_state(self) -> str:
+        """Get current circuit breaker state."""
+        if self._executor:
+            return self._executor.circuit_state
+        return "disabled"
+
+    @property
+    def current_inflight(self) -> int:
+        """Get current number of in-flight requests."""
+        if self._executor:
+            return self._executor.current_inflight
+        return 0
+
+    def get_resilience_stats(self) -> dict[str, Any]:
+        """Get resilience statistics.
+
+        Returns:
+            Dict with resilience stats, or empty dict if not resilient
+        """
+        if self._executor:
+            return self._executor.get_stats()
+        return {}
+
+    def reset_resilience(self) -> None:
+        """Reset all resilience components to initial state."""
+        if self._executor:
+            self._executor.reset()
 
     async def close(self) -> None:
         """Close the client and release resources."""

@@ -11,6 +11,12 @@ if TYPE_CHECKING:
 
     from ai_lib_python.client.core import AiClient
     from ai_lib_python.client.response import CallStats, ChatResponse
+    from ai_lib_python.resilience import (
+        CircuitBreakerConfig,
+        RateLimiterConfig,
+        ResilientConfig,
+        RetryConfig,
+    )
     from ai_lib_python.types.events import StreamingEvent
     from ai_lib_python.types.message import Message
     from ai_lib_python.types.tool import ToolChoice, ToolDefinition
@@ -25,6 +31,8 @@ class AiClientBuilder:
         ...     .model("anthropic/claude-3-5-sonnet")
         ...     .with_fallbacks(["openai/gpt-4o"])
         ...     .protocol_path("./custom-protocols")
+        ...     .with_retry(RetryConfig(max_retries=3))
+        ...     .with_circuit_breaker(CircuitBreakerConfig())
         ...     .build()
         ... )
     """
@@ -39,6 +47,11 @@ class AiClientBuilder:
         self._timeout: float | None = None
         self._hot_reload: bool = False
         self._max_inflight: int | None = None
+        # Resilience configuration
+        self._retry_config: RetryConfig | None = None
+        self._rate_limit_config: RateLimiterConfig | None = None
+        self._circuit_breaker_config: CircuitBreakerConfig | None = None
+        self._resilient_config: ResilientConfig | None = None
 
     def model(self, model_id: str) -> AiClientBuilder:
         """Set the model to use.
@@ -136,6 +149,65 @@ class AiClientBuilder:
         self._max_inflight = n
         return self
 
+    def with_retry(self, config: RetryConfig) -> AiClientBuilder:
+        """Configure retry policy.
+
+        Args:
+            config: Retry configuration
+
+        Returns:
+            Self for chaining
+        """
+        self._retry_config = config
+        return self
+
+    def with_rate_limit(self, config: RateLimiterConfig) -> AiClientBuilder:
+        """Configure rate limiting.
+
+        Args:
+            config: Rate limiter configuration
+
+        Returns:
+            Self for chaining
+        """
+        self._rate_limit_config = config
+        return self
+
+    def with_circuit_breaker(self, config: CircuitBreakerConfig) -> AiClientBuilder:
+        """Configure circuit breaker.
+
+        Args:
+            config: Circuit breaker configuration
+
+        Returns:
+            Self for chaining
+        """
+        self._circuit_breaker_config = config
+        return self
+
+    def with_resilience(self, config: ResilientConfig) -> AiClientBuilder:
+        """Configure all resilience patterns at once.
+
+        Args:
+            config: Combined resilience configuration
+
+        Returns:
+            Self for chaining
+        """
+        self._resilient_config = config
+        return self
+
+    def production_ready(self) -> AiClientBuilder:
+        """Enable production-ready resilience defaults.
+
+        Returns:
+            Self for chaining
+        """
+        from ai_lib_python.resilience import ResilientConfig
+
+        self._resilient_config = ResilientConfig.production()
+        return self
+
     async def build(self) -> AiClient:
         """Build the AiClient instance.
 
@@ -150,6 +222,27 @@ class AiClientBuilder:
 
         from ai_lib_python.client.core import AiClient
 
+        # Build resilient config
+        resilient_config = self._resilient_config
+        if resilient_config is None and any([
+            self._retry_config,
+            self._rate_limit_config,
+            self._circuit_breaker_config,
+            self._max_inflight,
+        ]):
+            from ai_lib_python.resilience import BackpressureConfig, ResilientConfig
+
+            resilient_config = ResilientConfig(
+                retry=self._retry_config,
+                rate_limit=self._rate_limit_config,
+                circuit_breaker=self._circuit_breaker_config,
+                backpressure=(
+                    BackpressureConfig(max_concurrent=self._max_inflight)
+                    if self._max_inflight
+                    else None
+                ),
+            )
+
         return await AiClient._create(
             model=self._model,
             protocol_path=self._protocol_path,
@@ -158,7 +251,7 @@ class AiClientBuilder:
             base_url_override=self._base_url_override,
             timeout=self._timeout,
             hot_reload=self._hot_reload,
-            max_inflight=self._max_inflight,
+            resilient_config=resilient_config,
         )
 
 
