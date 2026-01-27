@@ -23,6 +23,10 @@
 - **生产就绪**: 内置重试、限流、熔断和降级支持
 - **易于扩展**: 通过协议配置轻松添加新提供商
 - **多模态支持**: 支持文本、图像（base64/URL）和音频
+- **遥测功能**: 结构化日志、指标收集和分布式追踪
+- **Token 计数**: tiktoken 集成和成本估算
+- **连接池**: 高效的 HTTP 连接管理
+- **批处理**: 并发执行与并发控制
 
 ## 安装
 
@@ -33,8 +37,14 @@ pip install ai-lib-python
 安装可选功能：
 
 ```bash
-# 完整安装，包含密钥环和热重载支持
+# 完整安装，包含所有功能
 pip install ai-lib-python[full]
+
+# 遥测功能（OpenTelemetry 集成）
+pip install ai-lib-python[telemetry]
+
+# Token 计数（tiktoken）
+pip install ai-lib-python[tokenizer]
 
 # Jupyter notebook 集成
 pip install ai-lib-python[jupyter]

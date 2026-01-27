@@ -23,6 +23,10 @@ Unlike traditional adapter libraries that hardcode provider-specific logic, `ai-
 - **Production Ready**: Built-in retry, rate limiting, circuit breaker, and fallback
 - **Extensible**: Easy to add new providers via protocol configuration
 - **Multimodal**: Support for text, images (base64/URL), and audio
+- **Telemetry**: Structured logging, metrics, and distributed tracing
+- **Token Counting**: tiktoken integration and cost estimation
+- **Connection Pooling**: Efficient HTTP connection management
+- **Request Batching**: Parallel execution with concurrency control
 
 ## Installation
 
@@ -33,8 +37,14 @@ pip install ai-lib-python
 With optional features:
 
 ```bash
-# Full installation with keyring and hot-reload support
+# Full installation with all features
 pip install ai-lib-python[full]
+
+# For telemetry (OpenTelemetry integration)
+pip install ai-lib-python[telemetry]
+
+# For token counting (tiktoken)
+pip install ai-lib-python[tokenizer]
 
 # For Jupyter notebook integration
 pip install ai-lib-python[jupyter]
@@ -223,6 +233,105 @@ async with await AiClient.create("openai/gpt-4o") as client:
 # Client automatically closed
 ```
 
+### Token Counting and Cost Estimation
+
+```python
+from ai_lib_python.tokens import TokenCounter, estimate_cost, get_model_pricing
+
+# Count tokens
+counter = TokenCounter.for_model("gpt-4o")
+token_count = counter.count("Hello, how are you?")
+print(f"Token count: {token_count}")
+
+# Count message tokens
+messages = [Message.user("Hello!"), Message.assistant("Hi there!")]
+total_tokens = counter.count_messages(messages)
+
+# Estimate cost
+cost = estimate_cost(input_tokens=1000, output_tokens=500, model="gpt-4o")
+print(f"Estimated cost: ${cost.total_cost:.4f}")
+
+# Get model pricing info
+pricing = get_model_pricing("gpt-4o")
+print(f"Input: ${pricing.input_price_per_1k}/1K tokens")
+print(f"Context window: {pricing.context_window} tokens")
+```
+
+### Metrics and Telemetry
+
+```python
+from ai_lib_python.telemetry import (
+    get_logger,
+    MetricsCollector,
+    MetricLabels,
+    Tracer,
+)
+
+# Structured logging
+logger = get_logger("my_app")
+logger.info("Request started", model="gpt-4o", tokens=100)
+
+# Metrics collection
+collector = MetricsCollector()
+labels = MetricLabels(provider="openai", model="gpt-4o")
+collector.record_request(labels, latency=0.5, status="success", tokens_in=100, tokens_out=50)
+
+# Get metrics snapshot
+snapshot = collector.get_snapshot()
+print(f"Total requests: {snapshot.total_requests}")
+print(f"P99 latency: {snapshot.latency_p99_ms:.2f}ms")
+
+# Export to Prometheus format
+prometheus_metrics = collector.to_prometheus()
+
+# Distributed tracing
+tracer = Tracer("my_service")
+with tracer.span("api_call") as span:
+    span.set_attribute("model", "gpt-4o")
+    # ... do work
+```
+
+### Batch Processing
+
+```python
+from ai_lib_python.batch import BatchExecutor, BatchConfig
+
+# Execute multiple requests concurrently
+async def process_question(question: str) -> str:
+    client = await AiClient.create("openai/gpt-4o")
+    response = await client.chat().user(question).execute()
+    await client.close()
+    return response.content
+
+questions = ["What is AI?", "What is Python?", "What is async?"]
+
+executor = BatchExecutor(process_question, max_concurrent=5)
+result = await executor.execute(questions)
+
+print(f"Successful: {result.successful_count}")
+print(f"Failed: {result.failed_count}")
+for answer in result.get_successful_results():
+    print(answer)
+```
+
+### Connection Pooling
+
+```python
+from ai_lib_python.transport import ConnectionPool, PoolConfig
+
+# Create connection pool with custom config
+pool = ConnectionPool(PoolConfig.high_throughput())
+
+# Use pooled connections
+async with pool:
+    client = await pool.get_client("openai", "https://api.openai.com")
+    response = await client.post("/v1/chat/completions", json=payload)
+
+# Get pool statistics
+stats = pool.get_stats("openai")
+print(f"Active connections: {stats['openai']['active_connections']}")
+```
+
 ## Supported Providers
 
 | Provider | Models | Streaming | Tools | Vision |
@@ -252,6 +361,29 @@ async with await AiClient.create("openai/gpt-4o") as client:
 - **`CircuitBreaker`**: Circuit breaker pattern
 - **`Backpressure`**: Concurrency limiting
 - **`FallbackChain`**: Multi-target failover
+
+### Telemetry Classes
+
+- **`AiLibLogger`**: Structured logging with masking
+- **`MetricsCollector`**: Request metrics collection
+- **`Tracer`**: Distributed tracing
+- **`HealthChecker`**: Health monitoring
+
+### Token Classes
+
+- **`TokenCounter`**: Token counting interface
+- **`CostEstimate`**: Cost estimation result
+- **`ModelPricing`**: Model pricing information
+
+### Batch Classes
+
+- **`BatchCollector`**: Request grouping
+- **`BatchExecutor`**: Parallel execution
+
+### Transport Classes
+
+- **`ConnectionPool`**: HTTP connection pooling
+- **`PoolConfig`**: Pool configuration
 
 ### Error Classes
 

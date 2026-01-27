@@ -103,15 +103,15 @@ class BatchExecutor(Generic[T, R]):
         start_time = time.time()
         result = BatchResult[R]()
 
-        # Create tasks
-        tasks = [
-            self._execute_one(item, idx, result)
-            for idx, item in enumerate(items)
-        ]
-
         # Initialize result lists
         result.results = [None] * len(items)
         result.errors = [None] * len(items)
+
+        # Create tasks
+        tasks = [
+            asyncio.create_task(self._execute_one(item, idx, result))
+            for idx, item in enumerate(items)
+        ]
 
         # Execute all tasks
         if self._fail_fast:
@@ -123,6 +123,8 @@ class BatchExecutor(Generic[T, R]):
                 for task in tasks:
                     if not task.done():
                         task.cancel()
+                # Wait for cancellation to complete
+                await asyncio.gather(*tasks, return_exceptions=True)
         else:
             # Continue on errors
             await asyncio.gather(*tasks, return_exceptions=True)

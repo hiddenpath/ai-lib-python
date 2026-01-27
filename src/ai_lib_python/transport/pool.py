@@ -174,12 +174,20 @@ class ConnectionPool:
             if key not in self._clients:
                 start_time = time.time()
 
+                # Check if h2 is available for HTTP/2
+                try:
+                    import h2  # noqa: F401
+
+                    use_http2 = True
+                except ImportError:
+                    use_http2 = False
+
                 client = httpx.AsyncClient(
                     base_url=base_url,
                     headers=headers or {},
                     limits=self._config.to_httpx_limits(),
                     timeout=self._config.to_httpx_timeout(),
-                    http2=True,  # Enable HTTP/2 for better performance
+                    http2=use_http2,
                 )
 
                 self._clients[key] = client

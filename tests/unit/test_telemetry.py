@@ -4,8 +4,8 @@ import pytest
 
 from ai_lib_python.telemetry import (
     AiLibLogger,
-    HealthCheckResult,
     HealthChecker,
+    HealthCheckResult,
     HealthStatus,
     InMemoryExporter,
     LogContext,
@@ -17,12 +17,9 @@ from ai_lib_python.telemetry import (
     SensitiveDataMasker,
     Span,
     SpanContext,
-    SpanKind,
     SpanStatus,
     Tracer,
-    get_log_context,
     get_logger,
-    set_log_context,
 )
 
 
@@ -326,9 +323,8 @@ class TestTracer:
         exporter = InMemoryExporter()
         tracer = Tracer("test-tracer", exporter=exporter)
 
-        with pytest.raises(ValueError):
-            with tracer.span("failing-operation"):
-                raise ValueError("test error")
+        with pytest.raises(ValueError), tracer.span("failing-operation"):
+            raise ValueError("test error")
 
         assert len(exporter.get_spans()) == 1
         exported = exporter.get_spans()[0]
@@ -339,11 +335,10 @@ class TestTracer:
         exporter = InMemoryExporter()
         tracer = Tracer("test-tracer", exporter=exporter)
 
-        with tracer.span("parent") as parent:
-            with tracer.span("child") as child:
-                assert child.parent_context is not None
-                assert child.parent_context.span_id == parent.context.span_id
-                assert child.trace_id == parent.trace_id
+        with tracer.span("parent") as parent, tracer.span("child") as child:
+            assert child.parent_context is not None
+            assert child.parent_context.span_id == parent.context.span_id
+            assert child.trace_id == parent.trace_id
 
 
 class TestHealthChecker:

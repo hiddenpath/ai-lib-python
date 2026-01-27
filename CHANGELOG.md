@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-27
+
+### Added
+
+#### Telemetry & Observability
+- **AiLibLogger**: Structured logging with context support
+  - JSON and text output formats
+  - Request-scoped logging context
+  - Sensitive data masking (API keys, tokens)
+
+- **MetricsCollector**: Request metrics collection
+  - Latency tracking with percentiles (p50, p90, p99)
+  - Token usage tracking
+  - Error rate calculation
+  - Prometheus format export
+
+- **Tracer**: Distributed tracing support
+  - Span creation with context propagation
+  - W3C traceparent header support
+  - In-memory and console exporters
+
+- **HealthChecker**: Health monitoring
+  - Provider health tracking
+  - Aggregated health status
+  - Error rate-based health determination
+
+#### Connection Pooling
+- **ConnectionPool**: HTTP connection management
+  - Per-provider client isolation
+  - Configurable pool limits
+  - Connection statistics tracking
+  - HTTP/2 support
+
+- **PoolConfig**: Pool configuration presets
+  - `default()`: Balanced configuration
+  - `high_throughput()`: Optimized for many requests
+  - `low_latency()`: Optimized for quick responses
+
+#### Request Batching
+- **BatchCollector**: Request grouping
+  - Configurable batch size and timeout
+  - Group-by function support
+  - Automatic flush on limits
+
+- **BatchExecutor**: Parallel execution
+  - Concurrent request execution
+  - Configurable concurrency limits
+  - Progress callbacks
+  - Fail-fast option
+
+#### Token Counting
+- **TokenCounter**: Token counting utilities
+  - tiktoken integration for OpenAI models
+  - Character-based estimation fallback
+  - Message token counting
+  - Text truncation to token limit
+
+- **CostEstimate**: Cost estimation
+  - Model pricing data for major providers
+  - Input/output cost breakdown
+  - Context window information
+
+### Changed
+- Updated version to 0.2.0-dev
+- Added telemetry and tokenizer optional dependencies
+
 ## [0.1.0] - 2026-01-27
 
 ### Added
