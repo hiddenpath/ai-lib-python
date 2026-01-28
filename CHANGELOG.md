@@ -7,6 +7,117 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-27
+
+### Added
+
+#### Model Routing & Load Balancing (`routing/`)
+- **ModelInfo**: Complete model information structure
+  - `ModelCapabilities`: Capability definition (chat, code, multimodal, tools)
+  - `PricingInfo`: Pricing information with cost calculation
+  - `PerformanceMetrics`: Speed and quality tier classification
+
+- **Model Selection Strategies**
+  - `RoundRobinSelector`: Cyclic model selection
+  - `WeightedSelector`: Speed + quality weighted selection
+  - `CostBasedSelector`: Cheapest model selection
+  - `PerformanceBasedSelector`: Fastest model selection
+  - `QualityBasedSelector`: Highest quality selection
+  - `RandomSelector`: Random model selection
+
+- **ModelManager**: Centralized model management
+  - Add/remove/list models
+  - Filter by capability, cost, context window
+  - Model recommendation by use case
+  - JSON config import/export
+
+- **ModelArray**: Load balancing across endpoints
+  - Multiple load balancing strategies
+  - Health-based endpoint selection
+  - Endpoint health tracking
+
+- **Pre-configured Managers**
+  - `create_openai_models()`: OpenAI model catalog
+  - `create_anthropic_models()`: Anthropic model catalog
+
+#### Resilience Signals & Preflight (`resilience/`)
+- **SignalsSnapshot**: Unified runtime state aggregation
+  - `InflightSnapshot`: In-flight request state
+  - `RateLimiterSnapshot`: Rate limiter state
+  - `CircuitBreakerSnapshot`: Circuit breaker state
+  - `health_score`: Composite health metric (0.0-1.0)
+
+- **PreflightChecker**: Unified request gating
+  - Rate limiter pre-check
+  - Circuit breaker pre-check
+  - Backpressure permit acquisition
+  - Response header rate limit extraction
+
+- **PreflightContext**: Async context manager for preflight
+
+#### FanOut Stream Operator (`pipeline/`)
+- **FanOutTransform**: Expand arrays into separate events
+  - Configurable array path
+  - Metadata preservation
+  - Common pattern auto-detection (choices, candidates, results)
+
+- **ReplicateTransform**: Duplicate each event
+- **SplitTransform**: Filter events by predicate
+
+#### User Feedback Collection (`telemetry/`)
+- **Feedback Types**
+  - `ChoiceSelectionFeedback`: Multi-candidate selection
+  - `RatingFeedback`: 1-5 star ratings
+  - `ThumbsFeedback`: Up/down feedback
+  - `TextFeedback`: Free-form text
+  - `CorrectionFeedback`: Edit tracking
+  - `RegenerateFeedback`: Regeneration events
+  - `StopFeedback`: Stop generation events
+
+- **FeedbackSink** implementations
+  - `NoopFeedbackSink`: Discard feedback (default)
+  - `InMemoryFeedbackSink`: Store in memory
+  - `ConsoleFeedbackSink`: Print to console
+  - `CompositeFeedbackSink`: Multi-sink routing
+
+#### Stream Cancellation (`client/`)
+- **CancelToken**: Cooperative cancellation token
+  - Cancel with reason (user_request, timeout, error)
+  - Callback registration
+  - Async wait support
+
+- **CancelHandle**: Public cancel interface
+- **CancellableStream**: Wrap async iterators for cancellation
+- `create_cancel_pair()`: Factory for cancel pair
+
+#### ToolCall Assembler (`utils/`)
+- **ToolCallAssembler**: Assemble streaming tool calls
+  - Handle started events
+  - Accumulate argument fragments
+  - JSON parsing with fallback
+
+- **MultiToolCallAssembler**: Multi-turn tool call tracking
+
+#### Protocol Validation Enhancements (`protocol/`)
+- **Protocol Version Validation**
+  - `SUPPORTED_PROTOCOL_VERSIONS`: 1.0, 1.1, 1.5, 2.0
+  - Deprecation warnings for old versions
+
+- **Strict Streaming Validation**
+  - Decoder format check
+  - Content path requirements
+  - Tool call path requirements
+  - `AI_LIB_STRICT_STREAMING` environment variable
+
+- New validation functions
+  - `validate_protocol_version()`
+  - `validate_streaming_config()`
+  - `validate_manifest()`
+  - `validate_manifest_or_raise()`
+
+### Changed
+- Version updated to 0.4.0-dev
+
 ## [0.3.0] - 2026-01-27
 
 ### Added
