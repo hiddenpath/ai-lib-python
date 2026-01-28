@@ -23,10 +23,16 @@
 - **生产就绪**: 内置重试、限流、熔断和降级支持
 - **易于扩展**: 通过协议配置轻松添加新提供商
 - **多模态支持**: 支持文本、图像（base64/URL）和音频
-- **遥测功能**: 结构化日志、指标收集和分布式追踪
+- **遥测功能**: 结构化日志、指标收集、分布式追踪和用户反馈收集
 - **Token 计数**: tiktoken 集成和成本估算
 - **连接池**: 高效的 HTTP 连接管理
 - **批处理**: 并发执行与并发控制
+- **模型路由**: 智能模型选择与负载均衡策略
+- **向量嵌入**: 嵌入向量生成与向量运算
+- **结构化输出**: JSON 模式与 Schema 验证
+- **响应缓存**: 多后端缓存支持，带 TTL 管理
+- **插件系统**: 可扩展的钩子和中间件架构
+- **流式取消**: 流式操作的协作式取消
 
 ## 安装
 
@@ -233,6 +239,271 @@ async with await AiClient.create("openai/gpt-4o") as client:
 # 客户端自动关闭
 ```
 
+### Token 计数与成本估算
+
+```python
+from ai_lib_python.tokens import TokenCounter, estimate_cost, get_model_pricing
+
+# 计算 Token 数量
+counter = TokenCounter.for_model("gpt-4o")
+token_count = counter.count("你好，最近怎么样？")
+print(f"Token 数量: {token_count}")
+
+# 计算消息 Token 数
+messages = [Message.user("你好！"), Message.assistant("你好呀！")]
+total_tokens = counter.count_messages(messages)
+
+# 估算成本
+cost = estimate_cost(input_tokens=1000, output_tokens=500, model="gpt-4o")
+print(f"预估成本: ${cost.total_cost:.4f}")
+
+# 获取模型定价信息
+pricing = get_model_pricing("gpt-4o")
+print(f"输入价格: ${pricing.input_price_per_1k}/千 Token")
+print(f"上下文窗口: {pricing.context_window} Token")
+```
+
+### 指标与遥测
+
+```python
+from ai_lib_python.telemetry import (
+    get_logger,
+    MetricsCollector,
+    MetricLabels,
+    Tracer,
+)
+
+# 结构化日志
+logger = get_logger("my_app")
+logger.info("请求开始", model="gpt-4o", tokens=100)
+
+# 指标收集
+collector = MetricsCollector()
+labels = MetricLabels(provider="openai", model="gpt-4o")
+collector.record_request(labels, latency=0.5, status="success", tokens_in=100, tokens_out=50)
+
+# 获取指标快照
+snapshot = collector.get_snapshot()
+print(f"总请求数: {snapshot.total_requests}")
+print(f"P99 延迟: {snapshot.latency_p99_ms:.2f}ms")
+
+# 导出 Prometheus 格式
+prometheus_metrics = collector.to_prometheus()
+
+# 分布式追踪
+tracer = Tracer("my_service")
+with tracer.span("api_call") as span:
+    span.set_attribute("model", "gpt-4o")
+    # ... 执行操作
+```
+
+### 批量处理
+
+```python
+from ai_lib_python.batch import BatchExecutor, BatchConfig
+
+# 并发执行多个请求
+async def process_question(question: str) -> str:
+    client = await AiClient.create("openai/gpt-4o")
+    response = await client.chat().user(question).execute()
+    await client.close()
+    return response.content
+
+questions = ["什么是 AI？", "什么是 Python？", "什么是异步编程？"]
+
+executor = BatchExecutor(process_question, max_concurrent=5)
+result = await executor.execute(questions)
+
+print(f"成功: {result.successful_count}")
+print(f"失败: {result.failed_count}")
+for answer in result.get_successful_results():
+    print(answer)
+```
+
+### 模型路由与选择
+
+```python
+from ai_lib_python.routing import (
+    ModelManager, ModelInfo, create_openai_models, create_anthropic_models,
+    CostBasedSelector, QualityBasedSelector,
+)
+
+# 创建预配置的模型管理器
+manager = create_openai_models()
+manager.merge(create_anthropic_models())
+
+# 按能力筛选模型
+code_models = manager.filter_by_capability("code_generation")
+print(f"代码生成模型: {[m.name for m in code_models]}")
+
+# 选择最便宜的模型
+selector = CostBasedSelector()
+cheapest = selector.select(manager.list_models())
+print(f"最便宜: {cheapest.name} @ ${cheapest.pricing.input_cost_per_1k}/千Token")
+
+# 选择最高质量的模型
+quality_selector = QualityBasedSelector()
+best = quality_selector.select(manager.list_models())
+print(f"最高质量: {best.name}")
+
+# 按用例推荐模型
+recommended = manager.recommend_for("chat")
+```
+
+### 流式取消
+
+```python
+from ai_lib_python.client import create_cancel_pair, CancellableStream, CancelReason
+
+async def cancellable_stream():
+    client = await AiClient.create("openai/gpt-4o")
+    
+    # 创建取消令牌和句柄
+    token, handle = create_cancel_pair()
+    
+    # 启动支持取消的流式处理
+    stream = client.chat().user("写一个长故事...").stream()
+    cancellable = CancellableStream(stream, token)
+    
+    # 在另一个任务中可以取消:
+    # handle.cancel(CancelReason.USER_REQUEST)
+    
+    async for event in cancellable:
+        if event.is_content_delta:
+            print(event.as_content_delta.content, end="")
+        
+        # 检查是否已取消
+        if token.is_cancelled:
+            print("\n[已取消]")
+            break
+```
+
+### 用户反馈收集
+
+```python
+from ai_lib_python.telemetry import (
+    RatingFeedback, ThumbsFeedback, ChoiceSelectionFeedback,
+    InMemoryFeedbackSink, set_feedback_sink, report_feedback,
+)
+
+# 设置反馈收集器
+sink = InMemoryFeedbackSink(max_events=1000)
+set_feedback_sink(sink)
+
+# 报告用户反馈
+await report_feedback(RatingFeedback(
+    request_id="req-123",
+    rating=5,
+    category="helpfulness",
+    comment="回复很棒！"
+))
+
+await report_feedback(ThumbsFeedback(
+    request_id="req-456",
+    is_positive=True
+))
+
+# 报告多候选选择（用于 A/B 测试）
+await report_feedback(ChoiceSelectionFeedback(
+    request_id="req-789",
+    chosen_index=0,
+    rejected_indices=[1, 2],
+    latency_to_select_ms=1500.0
+))
+
+# 获取反馈记录
+all_feedback = sink.get_events()
+request_feedback = sink.get_events_by_request("req-123")
+```
+
+### 向量嵌入
+
+```python
+from ai_lib_python.embeddings import (
+    EmbeddingClient, cosine_similarity, find_most_similar
+)
+
+# 创建嵌入客户端
+client = await EmbeddingClient.create("openai/text-embedding-3-small")
+
+# 生成嵌入向量
+response = await client.embed("你好，世界！")
+embedding = response.first.vector
+print(f"维度: {len(embedding)}")
+
+# 批量生成嵌入
+texts = ["你好", "世界", "Python", "AI"]
+response = await client.embed_batch(texts)
+
+# 查找最相似的
+query = response.embeddings[0].vector
+candidates = [e.vector for e in response.embeddings[1:]]
+results = find_most_similar(query, candidates, top_k=2)
+for idx, score in results:
+    print(f"文本 '{texts[idx+1]}' 相似度: {score:.4f}")
+
+await client.close()
+```
+
+### 响应缓存
+
+```python
+from ai_lib_python.cache import CacheManager, CacheConfig, MemoryCache
+
+# 创建缓存管理器
+cache = CacheManager(
+    config=CacheConfig(default_ttl_seconds=3600),
+    backend=MemoryCache(max_size=1000)
+)
+
+# 缓存响应
+key = cache.generate_key(model="gpt-4o", messages=messages)
+
+# 先检查缓存
+cached = await cache.get(key)
+if cached:
+    print("缓存命中！")
+    response = cached
+else:
+    response = await client.chat().messages(messages).execute()
+    await cache.set(key, response)
+
+# 获取缓存统计
+stats = cache.stats()
+print(f"命中率: {stats.hit_ratio:.2%}")
+```
+
+### 插件系统
+
+```python
+from ai_lib_python.plugins import (
+    Plugin, PluginContext, PluginRegistry, HookType, HookManager
+)
+
+# 创建自定义插件
+class LoggingPlugin(Plugin):
+    def name(self) -> str:
+        return "logging"
+    
+    async def on_before_request(self, ctx: PluginContext) -> None:
+        print(f"请求发往 {ctx.model}: {ctx.request}")
+    
+    async def on_after_response(self, ctx: PluginContext) -> None:
+        print(f"收到响应: {ctx.response}")
+
+# 注册插件
+registry = PluginRegistry()
+await registry.register(LoggingPlugin())
+
+# 使用钩子进行细粒度控制
+hooks = HookManager()
+hooks.register(HookType.BEFORE_REQUEST, "log", lambda ctx: print(f"开始 {ctx.model}"))
+
+# 触发钩子
+ctx = PluginContext(model="gpt-4o", request={"messages": [...]})
+await registry.trigger_before_request(ctx)
+```
+
 ## 支持的提供商
 
 | 提供商 | 模型 | 流式 | 工具调用 | 视觉 |
@@ -262,6 +533,64 @@ async with await AiClient.create("openai/gpt-4o") as client:
 - **`CircuitBreaker`**: 熔断器模式
 - **`Backpressure`**: 并发限制
 - **`FallbackChain`**: 多目标降级
+- **`PreflightChecker`**: 统一的请求预检
+- **`SignalsSnapshot`**: 运行时状态聚合
+
+### 路由类
+
+- **`ModelManager`**: 集中式模型管理
+- **`ModelInfo`**: 带能力信息的模型定义
+- **`ModelArray`**: 端点间负载均衡
+- **`ModelSelectionStrategy`**: 选择策略（成本、质量、性能等）
+
+### 遥测类
+
+- **`AiLibLogger`**: 带敏感数据脱敏的结构化日志
+- **`MetricsCollector`**: 请求指标收集
+- **`Tracer`**: 分布式追踪
+- **`HealthChecker`**: 健康监控
+- **`FeedbackSink`**: 用户反馈收集
+
+### 嵌入类
+
+- **`EmbeddingClient`**: 嵌入向量生成客户端
+- **`Embedding`**: 单个嵌入结果
+- **`EmbeddingResponse`**: 带使用统计的响应
+
+### Token 类
+
+- **`TokenCounter`**: Token 计数接口
+- **`CostEstimate`**: 成本估算结果
+- **`ModelPricing`**: 模型定价信息
+
+### 缓存类
+
+- **`CacheManager`**: 高级缓存管理
+- **`CacheBackend`**: 缓存后端接口（内存、磁盘、空）
+- **`CacheKeyGenerator`**: 确定性键生成
+
+### 批处理类
+
+- **`BatchCollector`**: 请求分组
+- **`BatchExecutor`**: 并行执行
+
+### 插件类
+
+- **`Plugin`**: 插件基类
+- **`PluginRegistry`**: 插件管理
+- **`HookManager`**: 事件驱动钩子
+- **`Middleware`**: 请求/响应链
+
+### 传输类
+
+- **`ConnectionPool`**: HTTP 连接池
+- **`PoolConfig`**: 连接池配置
+
+### 取消类
+
+- **`CancelToken`**: 协作式取消令牌
+- **`CancelHandle`**: 公共取消接口
+- **`CancellableStream`**: 可取消的异步迭代器
 
 ### 错误类
 
@@ -329,26 +658,67 @@ ai-lib-python/
 │   ├── protocol/           # 协议层
 │   │   ├── manifest.py     # ProtocolManifest 模型
 │   │   ├── loader.py       # 协议加载
-│   │   └── validator.py    # Schema 验证
+│   │   └── validator.py    # Schema 验证（+ 版本/流式检查）
 │   ├── transport/          # HTTP 传输
 │   │   ├── http.py         # HttpTransport
-│   │   └── auth.py         # API 密钥解析
+│   │   ├── auth.py         # API 密钥解析
+│   │   └── pool.py         # ConnectionPool
 │   ├── pipeline/           # 流处理
 │   │   ├── decode.py       # SSE/NDJSON 解码器
 │   │   ├── select.py       # JSONPath 选择器
 │   │   ├── accumulate.py   # 工具调用累积器
-│   │   └── event_map.py    # 事件映射器
+│   │   ├── event_map.py    # 事件映射器
+│   │   └── fan_out.py      # FanOut, Replicate, Split 变换
 │   ├── resilience/         # 弹性模式
 │   │   ├── retry.py        # 重试策略
 │   │   ├── rate_limiter.py # 限流器
 │   │   ├── circuit_breaker.py  # 熔断器
 │   │   ├── backpressure.py # 背压控制
 │   │   ├── fallback.py     # 降级链
-│   │   └── executor.py     # 弹性执行器
+│   │   ├── executor.py     # 弹性执行器
+│   │   ├── signals.py      # SignalsSnapshot
+│   │   └── preflight.py    # PreflightChecker
+│   ├── routing/            # 模型路由与负载均衡
+│   │   ├── models.py       # ModelInfo, ModelCapabilities
+│   │   ├── strategies.py   # 选择策略
+│   │   ├── manager.py      # ModelManager
+│   │   └── array.py        # ModelArray（负载均衡）
 │   ├── client/             # 用户 API
 │   │   ├── core.py         # AiClient
 │   │   ├── builder.py      # 构建器
-│   │   └── response.py     # ChatResponse
+│   │   ├── response.py     # ChatResponse
+│   │   └── cancel.py       # CancelToken, CancellableStream
+│   ├── embeddings/         # 嵌入支持
+│   │   ├── client.py       # EmbeddingClient
+│   │   ├── types.py        # Embedding, EmbeddingRequest
+│   │   └── vectors.py      # 向量运算
+│   ├── cache/              # 响应缓存
+│   │   ├── manager.py      # CacheManager
+│   │   ├── backend.py      # MemoryCache, DiskCache
+│   │   └── key.py          # CacheKeyGenerator
+│   ├── tokens/             # Token 计数
+│   │   ├── counter.py      # TokenCounter, TiktokenCounter
+│   │   └── pricing.py      # ModelPricing, CostEstimate
+│   ├── telemetry/          # 可观测性
+│   │   ├── logging.py      # AiLibLogger
+│   │   ├── metrics.py      # MetricsCollector
+│   │   ├── tracing.py      # Tracer
+│   │   ├── health.py       # HealthChecker
+│   │   └── feedback.py     # 反馈类型和接收器
+│   ├── batch/              # 请求批处理
+│   │   ├── collector.py    # BatchCollector
+│   │   └── executor.py     # BatchExecutor
+│   ├── plugins/            # 插件系统
+│   │   ├── base.py         # Plugin 基类
+│   │   ├── registry.py     # PluginRegistry
+│   │   ├── hooks.py        # HookManager
+│   │   └── middleware.py   # Middleware 链
+│   ├── structured/         # 结构化输出
+│   │   ├── json_mode.py    # JsonModeConfig
+│   │   ├── schema.py       # SchemaGenerator
+│   │   └── validator.py    # OutputValidator
+│   ├── utils/              # 工具类
+│   │   └── tool_call_assembler.py  # ToolCallAssembler
 │   └── errors/             # 错误层次
 ├── tests/
 │   ├── unit/               # 单元测试

@@ -425,19 +425,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mypy strict mode
 - ruff linting
 
-## Future Releases
-
-### Planned for 0.2.0
-- Telemetry and observability
-- Connection pooling
-- Request batching
-- Token counting utilities
-
-### Planned for 0.3.0
-- Embedding support
-- Structured output (JSON mode)
-- Response caching
-- Plugin system
-
-[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.4.0
+[0.3.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.3.0
+[0.2.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.2.0
 [0.1.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.1.0

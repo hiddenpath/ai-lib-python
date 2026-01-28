@@ -23,10 +23,16 @@ Unlike traditional adapter libraries that hardcode provider-specific logic, `ai-
 - **Production Ready**: Built-in retry, rate limiting, circuit breaker, and fallback
 - **Extensible**: Easy to add new providers via protocol configuration
 - **Multimodal**: Support for text, images (base64/URL), and audio
-- **Telemetry**: Structured logging, metrics, and distributed tracing
+- **Telemetry**: Structured logging, metrics, distributed tracing, and user feedback collection
 - **Token Counting**: tiktoken integration and cost estimation
 - **Connection Pooling**: Efficient HTTP connection management
 - **Request Batching**: Parallel execution with concurrency control
+- **Model Routing**: Smart model selection with load balancing strategies
+- **Embeddings**: Embedding generation with vector operations
+- **Structured Output**: JSON mode with schema validation
+- **Response Caching**: Multi-backend caching with TTL support
+- **Plugin System**: Extensible hooks and middleware architecture
+- **Stream Cancellation**: Cooperative cancellation for streaming operations
 
 ## Installation
 
@@ -332,6 +338,190 @@ stats = pool.get_stats("openai")
 print(f"Active connections: {stats['openai']['active_connections']}")
 ```
 
+### Model Routing & Selection
+
+```python
+from ai_lib_python.routing import (
+    ModelManager, ModelInfo, create_openai_models, create_anthropic_models,
+    CostBasedSelector, QualityBasedSelector,
+)
+
+# Create a model manager with pre-configured models
+manager = create_openai_models()
+manager.merge(create_anthropic_models())
+
+# Select model by capability
+code_models = manager.filter_by_capability("code_generation")
+print(f"Code models: {[m.name for m in code_models]}")
+
+# Select cheapest model
+selector = CostBasedSelector()
+cheapest = selector.select(manager.list_models())
+print(f"Cheapest: {cheapest.name} @ ${cheapest.pricing.input_cost_per_1k}/1K")
+
+# Select highest quality model
+quality_selector = QualityBasedSelector()
+best = quality_selector.select(manager.list_models())
+print(f"Best quality: {best.name}")
+
+# Recommend model for use case
+recommended = manager.recommend_for("chat")
+```
+
+### Stream Cancellation
+
+```python
+from ai_lib_python.client import create_cancel_pair, CancellableStream, CancelReason
+
+async def cancellable_stream():
+    client = await AiClient.create("openai/gpt-4o")
+    
+    # Create cancel token and handle
+    token, handle = create_cancel_pair()
+    
+    # Start streaming with cancellation support
+    stream = client.chat().user("Write a long story...").stream()
+    cancellable = CancellableStream(stream, token)
+    
+    # In another task, you can cancel:
+    # handle.cancel(CancelReason.USER_REQUEST)
+    
+    async for event in cancellable:
+        if event.is_content_delta:
+            print(event.as_content_delta.content, end="")
+        
+        # Check if cancelled
+        if token.is_cancelled:
+            print("\n[Cancelled]")
+            break
+```
+
+### User Feedback Collection
+
+```python
+from ai_lib_python.telemetry import (
+    RatingFeedback, ThumbsFeedback, ChoiceSelectionFeedback,
+    InMemoryFeedbackSink, set_feedback_sink, report_feedback,
+)
+
+# Set up feedback collection
+sink = InMemoryFeedbackSink(max_events=1000)
+set_feedback_sink(sink)
+
+# Report user feedback
+await report_feedback(RatingFeedback(
+    request_id="req-123",
+    rating=5,
+    category="helpfulness",
+    comment="Great response!"
+))
+
+await report_feedback(ThumbsFeedback(
+    request_id="req-456",
+    is_positive=True
+))
+
+# Report multi-candidate selection (for A/B testing)
+await report_feedback(ChoiceSelectionFeedback(
+    request_id="req-789",
+    chosen_index=0,
+    rejected_indices=[1, 2],
+    latency_to_select_ms=1500.0
+))
+
+# Retrieve feedback
+all_feedback = sink.get_events()
+request_feedback = sink.get_events_by_request("req-123")
+```
+
+### Embeddings
+
+```python
+from ai_lib_python.embeddings import (
+    EmbeddingClient, cosine_similarity, find_most_similar
+)
+
+# Create embedding client
+client = await EmbeddingClient.create("openai/text-embedding-3-small")
+
+# Generate embeddings
+response = await client.embed("Hello, world!")
+embedding = response.first.vector
+print(f"Dimensions: {len(embedding)}")
+
+# Batch embeddings
+texts = ["Hello", "World", "Python", "AI"]
+response = await client.embed_batch(texts)
+
+# Find most similar
+query = response.embeddings[0].vector
+candidates = [e.vector for e in response.embeddings[1:]]
+results = find_most_similar(query, candidates, top_k=2)
+for idx, score in results:
+    print(f"Text '{texts[idx+1]}' similarity: {score:.4f}")
+
+await client.close()
+```
+
+### Response Caching
+
+```python
+from ai_lib_python.cache import CacheManager, CacheConfig, MemoryCache
+
+# Create cache manager
+cache = CacheManager(
+    config=CacheConfig(default_ttl_seconds=3600),
+    backend=MemoryCache(max_size=1000)
+)
+
+# Cache responses
+key = cache.generate_key(model="gpt-4o", messages=messages)
+
+# Check cache first
+cached = await cache.get(key)
+if cached:
+    print("Cache hit!")
+    response = cached
+else:
+    response = await client.chat().messages(messages).execute()
+    await cache.set(key, response)
+
+# Get cache statistics
+stats = cache.stats()
+print(f"Hit ratio: {stats.hit_ratio:.2%}")
+```
+
+### Plugin System
+
+```python
+from ai_lib_python.plugins import (
+    Plugin, PluginContext, PluginRegistry, HookType, HookManager
+)
+
+# Create a custom plugin
+class LoggingPlugin(Plugin):
+    def name(self) -> str:
+        return "logging"
+    
+    async def on_before_request(self, ctx: PluginContext) -> None:
+        print(f"Request to {ctx.model}: {ctx.request}")
+    
+    async def on_after_response(self, ctx: PluginContext) -> None:
+        print(f"Response received: {ctx.response}")
+
+# Register plugin
+registry = PluginRegistry()
+await registry.register(LoggingPlugin())
+
+# Use hooks for fine-grained control
+hooks = HookManager()
+hooks.register(HookType.BEFORE_REQUEST, "log", lambda ctx: print(f"Starting {ctx.model}"))
+
+# Trigger hooks
+ctx = PluginContext(model="gpt-4o", request={"messages": [...]})
+await registry.trigger_before_request(ctx)
+```
+
 ## Supported Providers
 
 | Provider | Models | Streaming | Tools | Vision |
@@ -361,6 +551,15 @@ print(f"Active connections: {stats['openai']['active_connections']}")
 - **`CircuitBreaker`**: Circuit breaker pattern
 - **`Backpressure`**: Concurrency limiting
 - **`FallbackChain`**: Multi-target failover
+- **`PreflightChecker`**: Unified request gating
+- **`SignalsSnapshot`**: Runtime state aggregation
+
+### Routing Classes
+
+- **`ModelManager`**: Centralized model management
+- **`ModelInfo`**: Model information with capabilities
+- **`ModelArray`**: Load balancing across endpoints
+- **`ModelSelectionStrategy`**: Selection strategies (Cost, Quality, Performance, etc.)
 
 ### Telemetry Classes
 
@@ -368,6 +567,13 @@ print(f"Active connections: {stats['openai']['active_connections']}")
 - **`MetricsCollector`**: Request metrics collection
 - **`Tracer`**: Distributed tracing
 - **`HealthChecker`**: Health monitoring
+- **`FeedbackSink`**: User feedback collection
+
+### Embedding Classes
+
+- **`EmbeddingClient`**: Embedding generation client
+- **`Embedding`**: Single embedding result
+- **`EmbeddingResponse`**: Response with usage stats
 
 ### Token Classes
 
@@ -375,15 +581,34 @@ print(f"Active connections: {stats['openai']['active_connections']}")
 - **`CostEstimate`**: Cost estimation result
 - **`ModelPricing`**: Model pricing information
 
+### Cache Classes
+
+- **`CacheManager`**: High-level cache management
+- **`CacheBackend`**: Cache backend interface (Memory, Disk, Null)
+- **`CacheKeyGenerator`**: Deterministic key generation
+
 ### Batch Classes
 
 - **`BatchCollector`**: Request grouping
 - **`BatchExecutor`**: Parallel execution
 
+### Plugin Classes
+
+- **`Plugin`**: Base plugin class
+- **`PluginRegistry`**: Plugin management
+- **`HookManager`**: Event-driven hooks
+- **`Middleware`**: Request/response chain
+
 ### Transport Classes
 
 - **`ConnectionPool`**: HTTP connection pooling
 - **`PoolConfig`**: Pool configuration
+
+### Cancellation Classes
+
+- **`CancelToken`**: Cooperative cancellation token
+- **`CancelHandle`**: Public cancel interface
+- **`CancellableStream`**: Cancellable async iterator
 
 ### Error Classes
 
@@ -451,26 +676,67 @@ ai-lib-python/
 │   ├── protocol/           # Protocol layer
 │   │   ├── manifest.py     # ProtocolManifest models
 │   │   ├── loader.py       # Protocol loading
-│   │   └── validator.py    # Schema validation
+│   │   └── validator.py    # Schema validation (+ version/streaming checks)
 │   ├── transport/          # HTTP transport
 │   │   ├── http.py         # HttpTransport
-│   │   └── auth.py         # API key resolution
+│   │   ├── auth.py         # API key resolution
+│   │   └── pool.py         # ConnectionPool
 │   ├── pipeline/           # Stream processing
 │   │   ├── decode.py       # SSE/NDJSON decoders
 │   │   ├── select.py       # JSONPath selectors
 │   │   ├── accumulate.py   # Tool call accumulator
-│   │   └── event_map.py    # Event mappers
+│   │   ├── event_map.py    # Event mappers
+│   │   └── fan_out.py      # FanOut, Replicate, Split transforms
 │   ├── resilience/         # Resilience patterns
 │   │   ├── retry.py        # RetryPolicy
 │   │   ├── rate_limiter.py # RateLimiter
 │   │   ├── circuit_breaker.py
 │   │   ├── backpressure.py
 │   │   ├── fallback.py     # FallbackChain
-│   │   └── executor.py     # ResilientExecutor
+│   │   ├── executor.py     # ResilientExecutor
+│   │   ├── signals.py      # SignalsSnapshot
+│   │   └── preflight.py    # PreflightChecker
+│   ├── routing/            # Model routing & load balancing
+│   │   ├── models.py       # ModelInfo, ModelCapabilities
+│   │   ├── strategies.py   # Selection strategies
+│   │   ├── manager.py      # ModelManager
+│   │   └── array.py        # ModelArray (load balancing)
 │   ├── client/             # User API
 │   │   ├── core.py         # AiClient
 │   │   ├── builder.py      # Builders
-│   │   └── response.py     # ChatResponse
+│   │   ├── response.py     # ChatResponse
+│   │   └── cancel.py       # CancelToken, CancellableStream
+│   ├── embeddings/         # Embedding support
+│   │   ├── client.py       # EmbeddingClient
+│   │   ├── types.py        # Embedding, EmbeddingRequest
+│   │   └── vectors.py      # Vector operations
+│   ├── cache/              # Response caching
+│   │   ├── manager.py      # CacheManager
+│   │   ├── backend.py      # MemoryCache, DiskCache
+│   │   └── key.py          # CacheKeyGenerator
+│   ├── tokens/             # Token counting
+│   │   ├── counter.py      # TokenCounter, TiktokenCounter
+│   │   └── pricing.py      # ModelPricing, CostEstimate
+│   ├── telemetry/          # Observability
+│   │   ├── logging.py      # AiLibLogger
+│   │   ├── metrics.py      # MetricsCollector
+│   │   ├── tracing.py      # Tracer
+│   │   ├── health.py       # HealthChecker
+│   │   └── feedback.py     # Feedback types and sinks
+│   ├── batch/              # Request batching
+│   │   ├── collector.py    # BatchCollector
+│   │   └── executor.py     # BatchExecutor
+│   ├── plugins/            # Plugin system
+│   │   ├── base.py         # Plugin base class
+│   │   ├── registry.py     # PluginRegistry
+│   │   ├── hooks.py        # HookManager
+│   │   └── middleware.py   # Middleware chain
+│   ├── structured/         # Structured output
+│   │   ├── json_mode.py    # JsonModeConfig
+│   │   ├── schema.py       # SchemaGenerator
+│   │   └── validator.py    # OutputValidator
+│   ├── utils/              # Utilities
+│   │   └── tool_call_assembler.py  # ToolCallAssembler
 │   └── errors/             # Error hierarchy
 ├── tests/
 │   ├── unit/               # Unit tests
