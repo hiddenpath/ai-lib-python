@@ -7,6 +7,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-27
+
+### Added
+
+#### Embedding Support
+- **EmbeddingClient**: Unified client for embedding generation
+  - Simple `EmbeddingClient.create()` factory method
+  - Fluent builder API with `EmbeddingClientBuilder`
+  - Batch embedding with automatic chunking
+  - Multiple provider support
+
+- **Embedding Types**
+  - `Embedding`: Single embedding result
+  - `EmbeddingRequest`: Request configuration
+  - `EmbeddingResponse`: Response with usage stats
+  - `EmbeddingModel`: Standard model enum
+
+- **Vector Operations**
+  - `cosine_similarity()`: Cosine similarity calculation
+  - `euclidean_distance()`: Euclidean distance
+  - `dot_product()`: Dot product
+  - `find_most_similar()`: Find top-k similar vectors
+  - `normalize_vector()`: Unit normalization
+  - `average_vectors()`: Vector averaging
+
+#### Structured Output (JSON Mode)
+- **JsonModeConfig**: JSON mode configuration
+  - Simple JSON object mode
+  - JSON Schema mode with validation
+  - Pydantic model integration
+
+- **SchemaGenerator**: JSON schema building
+  - Fluent API for schema construction
+  - Type constraints (min/max, pattern, enum)
+  - Pydantic model conversion
+
+- **OutputValidator**: Response validation
+  - JSON Schema validation
+  - Pydantic model validation
+  - `validate_or_raise()` for strict mode
+
+- **Utilities**
+  - `extract_json()`: Extract JSON from markdown
+  - `json_schema_from_type()`: Python type to schema
+  - `json_schema_from_pydantic()`: Pydantic model to schema
+
+#### Response Caching
+- **CacheManager**: High-level cache management
+  - Response caching with TTL
+  - Embedding caching
+  - Cache invalidation
+  - Statistics tracking
+
+- **Cache Backends**
+  - `MemoryCache`: In-memory with LRU eviction
+  - `DiskCache`: File-based persistence
+  - `NullCache`: No-op for testing
+
+- **CacheConfig**: Configuration presets
+  - `disabled()`: Disable caching
+  - `short_ttl()`: 5-minute TTL
+  - `long_ttl()`: 24-hour TTL
+
+- **CacheKeyGenerator**: Deterministic key generation
+  - Message-based keys
+  - Embedding-specific keys
+  - Parameter inclusion/exclusion
+
+#### Plugin System
+- **Plugin**: Base plugin class
+  - Lifecycle hooks (init, shutdown)
+  - Request/response processing
+  - Error handling
+  - Streaming support
+
+- **PluginRegistry**: Plugin management
+  - Registration and lookup
+  - Priority-based ordering
+  - Lifecycle management
+
+- **HookManager**: Event-driven hooks
+  - Multiple hook types
+  - Priority-based execution
+  - Sequential and parallel execution
+
+- **Middleware**: Request/response chain
+  - `MiddlewareChain`: Chain-of-responsibility
+  - `FunctionMiddleware`: Function wrapper
+  - Abort support
+
+### Changed
+- Updated version to 0.3.0-dev
+- Added B027 to ruff ignore list (optional plugin hooks)
+
 ## [0.2.0] - 2026-01-27
 
 ### Added

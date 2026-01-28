@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ai-lib-python"
-version = "0.2.0-dev"
+version = "0.3.0-dev"
 description = "Protocol Runtime for AI-Protocol - A Pythonic implementation for unified AI model interaction"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
@@ -131,6 +131,7 @@ select = [
 ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # do not perform function calls in argument defaults
+    "B027",   # empty method in abstract class (used for optional hooks)
     "B905",   # zip without explicit strict
     "SIM105", # contextlib.suppress doesn't work with yield
     "ARG001", # unused function argument (reserved for future)
