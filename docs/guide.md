@@ -1,6 +1,8 @@
 # ai-lib-python User Guide
 
-This guide covers advanced usage patterns and best practices for using ai-lib-python.
+**Official Python Runtime for AI-Protocol**
+
+This guide covers advanced usage patterns and best practices for using ai-lib-python, the official Python runtime for the AI-Protocol specification.
 
 ## Table of Contents
 

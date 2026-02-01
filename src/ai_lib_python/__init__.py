@@ -1,7 +1,7 @@
 """
-ai-lib-python: Protocol Runtime for AI-Protocol
+ai-lib-python: Official Python Runtime for AI-Protocol
 
-A Pythonic implementation for unified AI model interaction.
+The canonical Pythonic implementation for unified AI model interaction.
 Core principle: All logic is operators, all configuration is protocol.
 """
 
@@ -16,7 +16,7 @@ from ai_lib_python.types.message import (
 )
 from ai_lib_python.types.tool import ToolCall, ToolDefinition
 
-__version__ = "0.4.0-dev"
+__version__ = "0.4.0"
 
 __all__ = [
     # Client

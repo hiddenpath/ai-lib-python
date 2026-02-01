@@ -1,14 +1,15 @@
 # ai-lib-python
 
-**Protocol Runtime for AI-Protocol** - A Pythonic implementation for unified AI model interaction.
+**Official Python Runtime for AI-Protocol** - The canonical Pythonic implementation for unified AI model interaction.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
 [![Tests](https://github.com/hiddenpath/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/hiddenpath/ai-lib-python/actions)
+[![PyPI](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 
 ## Overview
 
-`ai-lib-python` is the Python runtime implementation for the [AI-Protocol](https://github.com/hiddenpath/ai-protocol) specification. It embodies the core design principle:
+`ai-lib-python` is the **official Python runtime** for the [AI-Protocol](https://github.com/hiddenpath/ai-protocol) specification. As the canonical Python implementation maintained by the AI-Protocol team, it embodies the core design principle:
 
 > **All logic is operators, all configuration is protocol.**
 
