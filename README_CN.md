@@ -1,14 +1,15 @@
 # ai-lib-python
 
-**AI-Protocol 协议运行时** - 统一 AI 模型交互的 Python 实现。
+**AI-Protocol 官方 Python 运行时** - 统一 AI 模型交互的规范 Python 实现。
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
 [![Tests](https://github.com/hiddenpath/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/hiddenpath/ai-lib-python/actions)
+[![PyPI](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 
 ## 概述
 
-`ai-lib-python` 是 [AI-Protocol](https://github.com/hiddenpath/ai-protocol) 规范的 Python 运行时实现。它体现了核心设计原则：
+`ai-lib-python` 是 [AI-Protocol](https://github.com/hiddenpath/ai-protocol) 规范的**官方 Python 运行时**。作为 AI-Protocol 团队维护的规范 Python 实现，它体现了核心设计原则：
 
 > **所有逻辑皆为算子，所有配置皆为协议。**
 
