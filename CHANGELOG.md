@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-02-05
+
+### Added
+
+#### Integration Tests (`tests/integration/`)
+- **Test Suite Expansion**: 6 comprehensive integration test files
+  - `test_chat.py`: Basic and streaming chat functionality (13 tests)
+  - `test_tools.py`: Tool/function calling scenarios (8 tests)
+  - `test_resilience.py`: Error handling, retries, circuit breaker (11 tests)
+  - `test_concurrency.py`: Concurrent request handling (9 tests)
+  - `test_protocol.py`: Protocol loading and configuration (9 tests)
+  - `conftest.py`: Mock helpers for OpenAI and Anthropic APIs
+
+- **Test Coverage**: Target increased from ~13% to 80%+
+  - Mock API responses using pytest-httpx
+  - Concurrent request testing
+  - Error scenario coverage
+  - Resilience pattern verification
+
+### Changed
+
+#### Development Status
+- **Beta Release**: Development status upgraded from "3 - Alpha" to "4 - Beta"
+- **Production Readiness**: Library now suitable for production use with proper testing coverage
+
+### Improvements
+
+- **Test Infrastructure**: Comprehensive mocking for integration tests
+  - OpenAI API response mocking
+  - Anthropic API response mocking
+  - Streaming chunk simulation
+  - Tool call response mocking
+  - Error scenario simulation
+
+### Internal
+
+- Test coverage infrastructure improvements
+- Mock utilities for integration testing
+- Concurrent load testing patterns
+
 ## [0.4.0] - 2026-01-27
 
 ### Added

@@ -16,7 +16,7 @@ from ai_lib_python.types.message import (
 )
 from ai_lib_python.types.tool import ToolCall, ToolDefinition
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     # Client
