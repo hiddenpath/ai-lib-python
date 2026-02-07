@@ -2,20 +2,51 @@
 
 **AI-Protocol 官方 Python 运行时** - 统一 AI 模型交互的规范 Python 实现。
 
+[![PyPI Version](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
 [![Tests](https://github.com/hiddenpath/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/hiddenpath/ai-lib-python/actions)
-[![PyPI](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 
-## 概述
+## 🎯 设计理念
 
 `ai-lib-python` 是 [AI-Protocol](https://github.com/hiddenpath/ai-protocol) 规范的**官方 Python 运行时**。作为 AI-Protocol 团队维护的规范 Python 实现，它体现了核心设计原则：
 
-> **所有逻辑皆为算子，所有配置皆为协议。**
+> **一切逻辑皆算子，一切配置皆协议** (All logic is operators, all configuration is protocol)
 
-与传统的适配器库硬编码特定提供商逻辑不同，`ai-lib-python` 是一个**协议驱动的运行时**，执行 AI-Protocol 规范。
+与传统的适配器库硬编码特定提供商逻辑不同，`ai-lib-python` 是一个**协议驱动的运行时**，执行 AI-Protocol 规范。这意味着：
 
-## 特性
+- **零硬编码提供商逻辑**: 所有行为都由协议清单（YAML/JSON 配置）驱动
+- **基于算子的架构**: 通过可组合的算子（解码器 → 选择器 → 累积器 → 扇出 → 事件映射器）进行处理
+- **可热重载**: 协议配置可以在不重启应用程序的情况下更新
+- **统一接口**: 开发者与单一、一致的 API 交互，无论底层提供商是什么
+
+## 🚀 快速入门
+
+### 基础用法
+
+```python
+import asyncio
+from ai_lib_python import AiClient, Message
+
+async def main():
+    # 创建客户端
+    client = await AiClient.create("openai/gpt-4o")
+
+    # 简单的聊天补全
+    response = await (
+        client.chat()
+        .user("你好！2+2 等于多少？")
+        .execute()
+    )
+    print(response.content)
+    # 输出: 2+2 等于 4。
+
+    await client.close()
+
+asyncio.run(main())
+```
+
+## ✨ 特性
 
 - **协议驱动**: 所有行为由 YAML/JSON 协议文件驱动
 - **统一接口**: 单一 API 支持所有 AI 提供商（OpenAI、Anthropic、Gemini、DeepSeek 等）
@@ -35,7 +66,7 @@
 - **插件系统**: 可扩展的钩子和中间件架构
 - **流式取消**: 流式操作的协作式取消
 
-## 安装
+## 📦 安装
 
 ```bash
 pip install ai-lib-python
@@ -60,31 +91,43 @@ pip install ai-lib-python[jupyter]
 pip install ai-lib-python[dev]
 ```
 
-## 快速入门
+## 🔧 配置
 
-### 基础用法
+库会自动在以下位置（按顺序）查找协议清单：
 
-```python
-import asyncio
-from ai_lib_python import AiClient, Message
+1. 通过 `AI_PROTOCOL_PATH` 环境变量设置的自定义路径
+2. 常见的开发路径：`ai-protocol/`、`../ai-protocol/`、`../../ai-protocol/`
+3. 最后手段：GitHub raw `hiddenpath/ai-protocol` (main)
 
-async def main():
-    # 创建客户端
-    client = await AiClient.create("openai/gpt-4o")
-    
-    # 简单的聊天补全
-    response = await (
-        client.chat()
-        .user("你好！2+2 等于多少？")
-        .execute()
-    )
-    print(response.content)
-    # 输出: 2+2 等于 4。
-    
-    await client.close()
+提供商清单按向后兼容的顺序解析：
+`dist/v1/providers/<id>.json` → `v1/providers/<id>.yaml`。
 
-asyncio.run(main())
+### 有用的环境变量
+
+| 变量 | 描述 | 默认值 |
+|------|------|--------|
+| `AI_PROTOCOL_PATH` | 自定义协议目录（本地路径或 GitHub URL） | - |
+| `AI_HTTP_TIMEOUT_SECS` | HTTP 超时时间（秒） | 60 |
+| `AI_LIB_MAX_INFLIGHT` | 最大并发请求数 | 10 |
+| `AI_LIB_RPS` | 速率限制（每秒请求数） | - |
+| `AI_LIB_BREAKER_FAILURE_THRESHOLD` | 熔断器失败阈值 | 5 |
+| `AI_LIB_BREAKER_COOLDOWN_SECS` | 熔断器冷却秒数 | 30 |
+
+### 提供商 API 密钥
+
+运行时从环境变量中读取 API 密钥，格式为：`<PROVIDER_ID>_API_KEY`
+
+```bash
+# 设置 API 密钥
+export OPENAI_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
+export GOOGLE_API_KEY="..."
+export DEEPSEEK_API_KEY="..."
 ```
+
+**推荐用于生产环境**：在 CI/CD、容器和生产部署中使用环境变量。
+
+## 🚀 使用示例
 
 ### 流式响应
 
@@ -505,6 +548,54 @@ ctx = PluginContext(model="gpt-4o", request={"messages": [...]})
 await registry.trigger_before_request(ctx)
 ```
 
+### 批量处理
+
+使用并发控制的批量执行：
+
+```python
+from ai_lib_python.batch import BatchExecutor, BatchConfig
+
+# 并发执行多个请求
+async def process_question(question: str) -> str:
+    client = await AiClient.create("openai/gpt-4o")
+    response = await client.chat().user(question).execute()
+    await client.close()
+    return response.content
+
+questions = ["什么是 AI？", "什么是 Python？", "什么是异步编程？"]
+
+executor = BatchExecutor(process_question, max_concurrent=5)
+result = await executor.execute(questions)
+
+print(f"成功: {result.successful_count}")
+print(f"失败: {result.failed_count}")
+for answer in result.get_successful_results():
+    print(answer)
+```
+
+## 🎨 协议驱动架构
+
+没有 `match provider` 语句。所有逻辑都从协议配置派生：
+
+```python
+# 管道从协议清单动态构建
+pipeline = Pipeline.from_manifest(manifest)
+
+# 算子通过清单（YAML/JSON）配置，而非硬编码
+# 添加新提供商无需修改代码
+```
+
+### 热重载
+
+可以在运行时更新协议配置：
+
+```python
+from ai_lib_python.protocol import ProtocolLoader
+
+loader = ProtocolLoader(hot_reload=True)
+# 协议更改会自动被检测和应用
+```
+
 ## 支持的提供商
 
 | 提供商 | 模型 | 流式 | 工具调用 | 视觉 |
@@ -620,7 +711,7 @@ await registry.trigger_before_request(ctx)
 └─────────────────┘ └──────────────┘ └─────────────────────┘
 ```
 
-## 开发
+## 🧪 开发
 
 ```bash
 # 克隆仓库
@@ -729,27 +820,21 @@ ai-lib-python/
 └── pyproject.toml
 ```
 
-## 环境变量
+## 📖 相关项目
 
-| 变量 | 描述 | 默认值 |
-|------|------|--------|
-| `OPENAI_API_KEY` | OpenAI API 密钥 | - |
-| `ANTHROPIC_API_KEY` | Anthropic API 密钥 | - |
-| `GOOGLE_API_KEY` | Google AI API 密钥 | - |
-| `AI_PROTOCOL_PATH` | 自定义协议目录 | - |
-| `AI_HTTP_TIMEOUT_SECS` | HTTP 超时时间 | 60 |
-| `AI_LIB_MAX_INFLIGHT` | 最大并发请求数 | 10 |
-
-## 相关项目
-
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - 协议规范
+- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - 协议规范（v1.5）
 - [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust) - Rust 运行时实现
 
-## 贡献
+## 🤝 贡献
 
-欢迎贡献！请阅读我们的 [贡献指南](CONTRIBUTING.md) 了解详情。
+欢迎贡献！请确保：
 
-## 许可证
+1. 所有协议配置遵循 AI-Protocol v1.5 规范
+2. 新功能有适当的文档和示例
+3. 新功能包含测试
+4. 代码遵循 Python 最佳实践（PEP 8）并通过 `ruff check` 检查
+
+## 📄 许可证
 
 本项目采用以下任一许可证：
 
@@ -757,3 +842,7 @@ ai-lib-python/
 - MIT License ([LICENSE-MIT](LICENSE-MIT) 或 http://opensource.org/licenses/MIT)
 
 由您选择。
+
+---
+
+**ai-lib-python** - 协议与 Python 优雅的相遇。🐍✨
