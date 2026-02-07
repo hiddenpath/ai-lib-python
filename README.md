@@ -2,20 +2,51 @@
 
 **Official Python Runtime for AI-Protocol** - The canonical Pythonic implementation for unified AI model interaction.
 
+[![PyPI Version](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
 [![Tests](https://github.com/hiddenpath/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/hiddenpath/ai-lib-python/actions)
-[![PyPI](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 
-## Overview
+## 🎯 Design Philosophy
 
-`ai-lib-python` is the **official Python runtime** for the [AI-Protocol](https://github.com/hiddenpath/ai-protocol) specification. As the canonical Python implementation maintained by the AI-Protocol team, it embodies the core design principle:
+`ai-lib-python` is the official Python runtime implementation for the [AI-Protocol](https://github.com/hiddenpath/ai-protocol) specification. It embodies the core design principle:
 
-> **All logic is operators, all configuration is protocol.**
+> **一切逻辑皆算子，一切配置皆协议** (All logic is operators, all configuration is protocol)
 
-Unlike traditional adapter libraries that hardcode provider-specific logic, `ai-lib-python` is a **protocol-driven runtime** that executes AI-Protocol specifications.
+Unlike traditional adapter libraries that hardcode provider-specific logic, `ai-lib-python` is a **protocol-driven runtime** that executes AI-Protocol specifications. This means:
 
-## Features
+- **Zero hardcoded provider logic**: All behavior is driven by protocol manifests (YAML/JSON configurations)
+- **Operator-based architecture**: Processing is done through composable operators (Decoder → Selector → Accumulator → FanOut → EventMapper)
+- **Hot-reloadable**: Protocol configurations can be updated without restarting the application
+- **Unified interface**: Developers interact with a single, consistent API regardless of the underlying provider
+
+## 🚀 Quick Start
+
+### Basic Usage
+
+```python
+import asyncio
+from ai_lib_python import AiClient, Message
+
+async def main():
+    # Create client with model
+    client = await AiClient.create("openai/gpt-4o")
+
+    # Simple chat completion
+    response = await (
+        client.chat()
+        .user("Hello! What's 2+2?")
+        .execute()
+    )
+    print(response.content)
+    # Output: 2+2 equals 4.
+
+    await client.close()
+
+asyncio.run(main())
+```
+
+## ✨ Features
 
 - **Protocol-Driven**: All behavior is driven by YAML/JSON protocol files
 - **Unified Interface**: Single API for all AI providers (OpenAI, Anthropic, Gemini, DeepSeek, etc.)
@@ -35,7 +66,7 @@ Unlike traditional adapter libraries that hardcode provider-specific logic, `ai-
 - **Plugin System**: Extensible hooks and middleware architecture
 - **Stream Cancellation**: Cooperative cancellation for streaming operations
 
-## Installation
+## 📦 Installation
 
 ```bash
 pip install ai-lib-python
@@ -60,31 +91,66 @@ pip install ai-lib-python[jupyter]
 pip install ai-lib-python[dev]
 ```
 
-## Quick Start
+## 🔧 Configuration
 
-### Basic Usage
+The library automatically looks for protocol manifests in the following locations (in order):
+
+1. Custom path set via `AI_PROTOCOL_PATH` environment variable
+2. Common dev paths: `ai-protocol/`, `../ai-protocol/`, `../../ai-protocol/`
+3. Last resort: GitHub raw `hiddenpath/ai-protocol` (main)
+
+Provider manifests are resolved in a backward-compatible order:
+`dist/v1/providers/<id>.json` → `v1/providers/<id>.yaml`.
+
+### Useful Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AI_PROTOCOL_PATH` | Custom protocol directory (local path or GitHub URL) | - |
+| `AI_HTTP_TIMEOUT_SECS` | HTTP timeout in seconds | 60 |
+| `AI_LIB_MAX_INFLIGHT` | Max concurrent requests | 10 |
+| `AI_LIB_RPS` | Rate limit (requests per second) | - |
+| `AI_LIB_BREAKER_FAILURE_THRESHOLD` | Circuit breaker failure threshold | 5 |
+| `AI_LIB_BREAKER_COOLDOWN_SECS` | Circuit breaker cooldown seconds | 30 |
+
+### Provider API Keys
+
+The runtime reads API keys from environment variables in the format: `<PROVIDER_ID>_API_KEY`
+
+```bash
+# Set API keys
+export OPENAI_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
+export GOOGLE_API_KEY="..."
+export DEEPSEEK_API_KEY="..."
+```
+
+**Recommended for production**: Use environment variables for CI/CD, containers, and production deployments.
+
+## 🎨 Protocol-Driven Architecture
+
+No `match provider` statements. All logic is derived from protocol configuration:
 
 ```python
-import asyncio
-from ai_lib_python import AiClient, Message
+# The pipeline is built dynamically from protocol manifest
+pipeline = Pipeline.from_manifest(manifest)
 
-async def main():
-    # Create client with model
-    client = await AiClient.create("openai/gpt-4o")
-    
-    # Simple chat completion
-    response = await (
-        client.chat()
-        .user("Hello! What's 2+2?")
-        .execute()
-    )
-    print(response.content)
-    # Output: 2+2 equals 4.
-    
-    await client.close()
-
-asyncio.run(main())
+# Operators are configured via manifests (YAML/JSON), not hardcoded
+# Adding a new provider requires zero code changes
 ```
+
+### Hot Reload
+
+Protocol configurations can be updated at runtime:
+
+```python
+from ai_lib_python.protocol import ProtocolLoader
+
+loader = ProtocolLoader(hot_reload=True)
+# Protocol changes are automatically picked up
+```
+
+## 🚀 Usage Examples
 
 ### Streaming
 
@@ -503,10 +569,10 @@ from ai_lib_python.plugins import (
 class LoggingPlugin(Plugin):
     def name(self) -> str:
         return "logging"
-    
+
     async def on_before_request(self, ctx: PluginContext) -> None:
         print(f"Request to {ctx.model}: {ctx.request}")
-    
+
     async def on_after_response(self, ctx: PluginContext) -> None:
         print(f"Response received: {ctx.response}")
 
@@ -521,6 +587,31 @@ hooks.register(HookType.BEFORE_REQUEST, "log", lambda ctx: print(f"Starting {ctx
 # Trigger hooks
 ctx = PluginContext(model="gpt-4o", request={"messages": [...]})
 await registry.trigger_before_request(ctx)
+```
+
+### Batch Processing
+
+For batch execution with concurrency control:
+
+```python
+from ai_lib_python.batch import BatchExecutor, BatchConfig
+
+# Execute multiple requests concurrently
+async def process_question(question: str) -> str:
+    client = await AiClient.create("openai/gpt-4o")
+    response = await client.chat().user(question).execute()
+    await client.close()
+    return response.content
+
+questions = ["What is AI?", "What is Python?", "What is async?"]
+
+executor = BatchExecutor(process_question, max_concurrent=5)
+result = await executor.execute(questions)
+
+print(f"Successful: {result.successful_count}")
+print(f"Failed: {result.failed_count}")
+for answer in result.get_successful_results():
+    print(answer)
 ```
 
 ## Supported Providers
@@ -638,7 +729,7 @@ await registry.trigger_before_request(ctx)
 └─────────────────┘ └──────────────┘ └─────────────────────┘
 ```
 
-## Development
+## 🧪 Development
 
 ```bash
 # Clone the repository
@@ -747,27 +838,32 @@ ai-lib-python/
 └── pyproject.toml
 ```
 
-## Environment Variables
+## 📖 Related Projects
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPENAI_API_KEY` | OpenAI API key | - |
-| `ANTHROPIC_API_KEY` | Anthropic API key | - |
-| `GOOGLE_API_KEY` | Google AI API key | - |
-| `AI_PROTOCOL_PATH` | Custom protocol directory | - |
-| `AI_HTTP_TIMEOUT_SECS` | HTTP timeout | 60 |
-| `AI_LIB_MAX_INFLIGHT` | Max concurrent requests | 10 |
-
-## Related Projects
-
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - Protocol specification
+- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - Protocol specification (v1.5)
 - [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust) - Rust runtime implementation
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
+Contributions are welcome! Please ensure that:
 
-## License
+1. All protocol configurations follow the AI-Protocol v1.5 specification
+2. New features are properly documented with examples
+3. Tests are included for new features
+4. Code follows Python best practices (PEP 8) and passes `ruff check`
+
+## 📄 License
+
+This project is licensed under either of:
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT License ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+---
+
+**ai-lib-python** - Where protocol meets Pythonic elegance. 🐍✨
 
 This project is licensed under either of:
 
