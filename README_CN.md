@@ -66,23 +66,69 @@ asyncio.run(main())
 - **插件系统**: 可扩展的钩子和中间件架构
 - **流式取消**: 流式操作的协作式取消
 
+## 🔄 V2 协议对齐
+
+从 v0.5.0 开始，`ai-lib-python` 与 **AI-Protocol V2** 规范对齐：
+
+### 标准错误码（V2）
+
+所有 provider 错误被分类为 13 个标准错误码，具有统一的重试/回退语义：
+
+| 错误码 | 名称 | 可重试 | 可回退 |
+|--------|------|--------|--------|
+| E1001 | `invalid_request` | 否 | 否 |
+| E1002 | `authentication` | 否 | 是 |
+| E1003 | `permission_denied` | 否 | 否 |
+| E1004 | `not_found` | 否 | 否 |
+| E1005 | `request_too_large` | 否 | 否 |
+| E2001 | `rate_limited` | 是 | 是 |
+| E2002 | `quota_exhausted` | 否 | 是 |
+| E3001 | `server_error` | 是 | 是 |
+| E3002 | `overloaded` | 是 | 是 |
+| E3003 | `timeout` | 是 | 是 |
+| E4001 | `conflict` | 是 | 否 |
+| E4002 | `cancelled` | 否 | 否 |
+| E9999 | `unknown` | 否 | 否 |
+
+分类遵循优先级管道：provider 特定错误码 → HTTP 状态码覆盖 → 标准 HTTP 映射 → `E9999`。
+
+### 兼容性测试
+
+跨运行时行为一致性通过 `ai-protocol` 仓库中的共享 YAML 测试套件验证：
+
+```bash
+# 运行兼容性测试
+pytest tests/compliance/ -v
+
+# 指定兼容性测试目录
+COMPLIANCE_DIR=../ai-protocol/tests/compliance pytest tests/compliance/ -v
+```
+
+详细信息请参阅 [CROSS_RUNTIME.md](https://github.com/hiddenpath/ai-protocol/blob/main/docs/CROSS_RUNTIME.md)。
+
 ## 📦 安装
 
 ```bash
 pip install ai-lib-python
 ```
 
-安装可选功能：
+安装可选功能（V2 能力 extras）：
 
 ```bash
 # 完整安装，包含所有功能
 pip install ai-lib-python[full]
 
-# 遥测功能（OpenTelemetry 集成）
-pip install ai-lib-python[telemetry]
+# V2 能力 extras
+pip install ai-lib-python[vision]        # 图像处理（Pillow）
+pip install ai-lib-python[audio]         # 音频处理（soundfile）
+pip install ai-lib-python[embeddings]    # 嵌入向量生成
+pip install ai-lib-python[structured]    # 结构化输出 / JSON 模式
+pip install ai-lib-python[batch]         # 批量处理
+pip install ai-lib-python[agentic]       # Agent 工作流支持
 
-# Token 计数（tiktoken）
-pip install ai-lib-python[tokenizer]
+# 基础设施 extras
+pip install ai-lib-python[telemetry]     # OpenTelemetry 集成
+pip install ai-lib-python[tokenizer]     # tiktoken Token 计数
 
 # Jupyter notebook 集成
 pip install ai-lib-python[jupyter]
@@ -829,7 +875,7 @@ ai-lib-python/
 
 欢迎贡献！请确保：
 
-1. 所有协议配置遵循 AI-Protocol v1.5 规范
+1. 所有协议配置遵循 AI-Protocol 规范（v1.5 / V2）
 2. 新功能有适当的文档和示例
 3. 新功能包含测试
 4. 代码遵循 Python 最佳实践（PEP 8）并通过 `ruff check` 检查
@@ -842,6 +888,13 @@ ai-lib-python/
 - MIT License ([LICENSE-MIT](LICENSE-MIT) 或 http://opensource.org/licenses/MIT)
 
 由您选择。
+
+---
+
+## 🔗 相关项目
+
+- [AI-Protocol](https://github.com/hiddenpath/ai-protocol): 协议规范（v1.5 / V2）
+- [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust): Rust 运行时实现
 
 ---
 

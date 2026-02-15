@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-02-15
+
+### Added
+
+#### V2 Standard Error Codes (`errors/standard_codes.py`)
+- 13 `StandardErrorCode` frozen dataclass instances (E1001–E9999) aligned with AI-Protocol V2
+- `from_error_class()`: Maps `ErrorClass` enum to standard codes (cached mapping)
+- `from_http_status()`: Maps HTTP status codes including Anthropic 529
+- `from_name()`: Lookup standard code by name string
+- `STANDARD_ERROR_CODES` registry for code-based access
+
+#### Feature Flags (`_features.py`)
+- Runtime feature detection for 6 optional extras: vision, audio, telemetry, tokenizer, keyring, watchdog
+- `require_extra()`: Raises `ImportError` with pip install hint when extra is unavailable
+- 8 pip extras in `pyproject.toml`: vision, audio, embeddings, structured, batch, agentic, telemetry, tokenizer
+
+#### Compliance Testing (`tests/compliance/`)
+- YAML-based compliance test runner using pytest parametrization
+- 20/20 test cases passing against `ai-protocol/tests/compliance/cases/`
+
+### Changed
+
+#### Error Classification Improvements
+- E4001/E4002 category corrected from "conflict" to "operational" (aligned with Rust runtime and V2 spec)
+- `Authentication` added to `_FALLBACKABLE_CLASSES` (per-provider key; another provider may succeed)
+- HTTP 529 → E3002 (overloaded) added to `_HTTP_STATUS_TO_CODE` mapping
+- `from_error_class()` optimized: module-level lazy cache instead of per-call dict creation
+- `RemoteError` context now includes `retryable` and `fallbackable` fields
+
+#### Documentation
+- Added Chinese one-line description to all module doc headers (10 modules)
+- All remaining documentation in English per project convention
+
+#### .gitignore
+- Added Chinese-named internal document patterns
+- Strengthened wildcard patterns for work documents
+
 ## [0.5.0] - 2026-02-05
 
 ### Added
@@ -465,7 +502,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mypy strict mode
 - ruff linting
 
-[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.6.0
+[0.5.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.5.0
 [0.4.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.4.0
 [0.3.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.3.0
 [0.2.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.2.0

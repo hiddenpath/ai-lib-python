@@ -1,4 +1,5 @@
-"""
+"""事件映射：将提供商特定的流帧转换为统一的 StreamingEvent 模型。
+
 Event mappers for converting protocol frames to unified streaming events.
 
 Maps provider-specific streaming formats to the unified StreamingEvent model.

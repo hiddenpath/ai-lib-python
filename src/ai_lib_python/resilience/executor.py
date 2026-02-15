@@ -1,4 +1,5 @@
-"""
+"""弹性执行器：统一的重试、限流、熔断和背压控制。
+
 Resilient executor combining all resilience patterns.
 
 Provides a unified interface for executing operations with

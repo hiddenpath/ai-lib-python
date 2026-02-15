@@ -1,4 +1,5 @@
-"""
+"""HTTP 传输层：基于 httpx 的异步 HTTP 客户端，支持流式传输和代理。
+
 HTTP transport using httpx for async requests.
 
 Provides:
@@ -28,6 +29,22 @@ if TYPE_CHECKING:
 # Default timeouts
 _DEFAULT_TIMEOUT = 30.0
 _DEFAULT_CONNECT_TIMEOUT = 10.0
+
+
+_UA_VERSION: str | None = None
+
+
+def _get_ua_version() -> str:
+    """Get package version for User-Agent (cached)."""
+    global _UA_VERSION
+    if _UA_VERSION is None:
+        try:
+            from importlib.metadata import version
+
+            _UA_VERSION = version("ai-lib-python")
+        except Exception:
+            _UA_VERSION = "0.5.0"
+    return _UA_VERSION
 
 
 class HttpTransport:
@@ -129,7 +146,7 @@ class HttpTransport:
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "ai-lib-python/0.1.0",
+            "User-Agent": f"ai-lib-python/{_get_ua_version()}",
         }
 
         # Add auth headers

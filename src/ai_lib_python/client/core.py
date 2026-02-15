@@ -1,4 +1,5 @@
-"""
+"""核心客户端实现：提供协议驱动的统一 AI 模型交互接口。
+
 Core AiClient implementation.
 """
 

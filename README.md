@@ -66,23 +66,69 @@ asyncio.run(main())
 - **Plugin System**: Extensible hooks and middleware architecture
 - **Stream Cancellation**: Cooperative cancellation for streaming operations
 
+## 🔄 V2 Protocol Alignment
+
+Starting with v0.5.0, `ai-lib-python` aligns with the **AI-Protocol V2** specification:
+
+### Standard Error Codes (V2)
+
+All provider errors are classified into 13 standard error codes with unified retry/fallback semantics:
+
+| Code | Name | Retryable | Fallbackable |
+|------|------|-----------|--------------|
+| E1001 | `invalid_request` | No | No |
+| E1002 | `authentication` | No | Yes |
+| E1003 | `permission_denied` | No | No |
+| E1004 | `not_found` | No | No |
+| E1005 | `request_too_large` | No | No |
+| E2001 | `rate_limited` | Yes | Yes |
+| E2002 | `quota_exhausted` | No | Yes |
+| E3001 | `server_error` | Yes | Yes |
+| E3002 | `overloaded` | Yes | Yes |
+| E3003 | `timeout` | Yes | Yes |
+| E4001 | `conflict` | Yes | No |
+| E4002 | `cancelled` | No | No |
+| E9999 | `unknown` | No | No |
+
+Classification follows a priority pipeline: provider-specific error code → HTTP status override → standard HTTP mapping → `E9999`.
+
+### Compliance Tests
+
+Cross-runtime behavioral consistency is verified by a shared YAML-based test suite from the `ai-protocol` repository:
+
+```bash
+# Run compliance tests
+pytest tests/compliance/ -v
+
+# With explicit compliance directory
+COMPLIANCE_DIR=../ai-protocol/tests/compliance pytest tests/compliance/ -v
+```
+
+For details, see [CROSS_RUNTIME.md](https://github.com/hiddenpath/ai-protocol/blob/main/docs/CROSS_RUNTIME.md).
+
 ## 📦 Installation
 
 ```bash
 pip install ai-lib-python
 ```
 
-With optional features:
+With optional features (V2 capability extras):
 
 ```bash
 # Full installation with all features
 pip install ai-lib-python[full]
 
-# For telemetry (OpenTelemetry integration)
-pip install ai-lib-python[telemetry]
+# V2 capability extras
+pip install ai-lib-python[vision]        # Image processing (Pillow)
+pip install ai-lib-python[audio]         # Audio processing (soundfile)
+pip install ai-lib-python[embeddings]    # Embedding generation
+pip install ai-lib-python[structured]    # Structured output / JSON mode
+pip install ai-lib-python[batch]         # Batch processing
+pip install ai-lib-python[agentic]       # Agent workflow support
 
-# For token counting (tiktoken)
-pip install ai-lib-python[tokenizer]
+# Infrastructure extras
+pip install ai-lib-python[telemetry]     # OpenTelemetry integration
+pip install ai-lib-python[tokenizer]     # tiktoken token counting
 
 # For Jupyter notebook integration
 pip install ai-lib-python[jupyter]
@@ -847,10 +893,12 @@ ai-lib-python/
 
 Contributions are welcome! Please ensure that:
 
-1. All protocol configurations follow the AI-Protocol v1.5 specification
+1. All protocol configurations follow the AI-Protocol specification (v1.5 / V2)
 2. New features are properly documented with examples
 3. Tests are included for new features
-4. Code follows Python best practices (PEP 8) and passes `ruff check`
+4. Compliance tests pass for cross-runtime behaviors (`pytest tests/compliance/`)
+5. Code follows Python best practices (PEP 8) and passes `ruff check`
+6. Type hints pass `mypy --strict` for modified modules
 
 ## 📄 License
 
@@ -863,11 +911,11 @@ at your option.
 
 ---
 
+## 🔗 Related Projects
+
+- [AI-Protocol](https://github.com/hiddenpath/ai-protocol): Protocol specification (v1.5 / V2)
+- [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust): Rust runtime implementation
+
+---
+
 **ai-lib-python** - Where protocol meets Pythonic elegance. 🐍✨
-
-This project is licensed under either of:
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- MIT License ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-
-at your option.

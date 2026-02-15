@@ -69,6 +69,33 @@ dmypy.json
 # ruff
 .ruff_cache/
 
+# Work documents and internal implementation plans (not for remote)
+work/
+
+# Work / internal documents (do not publish)
+*REPORT*.md
+*REPORT*.txt
+*SUMMARY*.md
+*SUMMARY*.txt
+*PLAN*.md
+*PLAN*.txt
+*ANALYSIS*.md
+*ANALYSIS*.txt
+*REVIEW*.md
+*REVIEW*.txt
+*AUDIT*.md
+*AUDIT*.txt
+*BACKLOG*.md
+*IMPROVEMENTS*.md
+
+# Chinese-named internal documents
+*审查*.md
+*计划*.md
+*报告*.md
+*分析*.md
+*回溯*.md
+*进度*.md
+
 # IDE
 .idea/
 .vscode/

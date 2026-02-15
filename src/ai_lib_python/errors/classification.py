@@ -1,4 +1,5 @@
-"""
+"""错误分类模块：将 HTTP 状态码和响应体映射到 13 个标准错误类别。
+
 Error classification based on AI-Protocol error_handling specification.
 
 Provides 13 standard error classes aligned with the protocol specification.
@@ -7,7 +8,10 @@ Provides 13 standard error classes aligned with the protocol specification.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from ai_lib_python.errors.standard_codes import StandardErrorCode
 
 
 class ErrorClass(str, Enum):
@@ -55,6 +59,13 @@ class ErrorClass(str, Enum):
     OTHER = "other"
     """Unknown or provider-specific classification."""
 
+    @property
+    def standard_code(self) -> StandardErrorCode:
+        """Return the AI-Protocol V2 StandardErrorCode for this error class."""
+        from ai_lib_python.errors.standard_codes import from_error_class
+
+        return from_error_class(self)
+
 
 # Default retryable error classes
 _RETRYABLE_CLASSES: set[ErrorClass] = {
@@ -65,8 +76,9 @@ _RETRYABLE_CLASSES: set[ErrorClass] = {
     ErrorClass.OVERLOADED,
 }
 
-# Default fallbackable error classes
+# Default fallbackable error classes (aligned with V2 standard codes)
 _FALLBACKABLE_CLASSES: set[ErrorClass] = {
+    ErrorClass.AUTHENTICATION,  # Per-provider key; another provider may succeed
     ErrorClass.RATE_LIMITED,
     ErrorClass.TIMEOUT,
     ErrorClass.SERVER_ERROR,
@@ -90,6 +102,7 @@ _DEFAULT_STATUS_MAPPING: dict[int, ErrorClass] = {
     502: ErrorClass.SERVER_ERROR,
     503: ErrorClass.OVERLOADED,
     504: ErrorClass.TIMEOUT,
+    529: ErrorClass.OVERLOADED,  # Anthropic-specific overloaded status
 }
 
 
@@ -108,7 +121,30 @@ def classify_http_error(
     Returns:
         ErrorClass representing the error type
     """
-    # Try provider-specific classification first
+    # Body-based hints take precedence (more specific than status alone)
+    # Check for request_too_large hints in body (e.g., context_length_exceeded)
+    if status_code == 400 and body:
+        error_obj = body.get("error")
+        if isinstance(error_obj, dict):
+            code_val = error_obj.get("code") or error_obj.get("type") or ""
+            if isinstance(code_val, str) and "context_length" in code_val.lower():
+                return ErrorClass.REQUEST_TOO_LARGE
+
+    # Check for quota exhaustion hints in body (429 may be quota or rate limit)
+    if status_code == 429 and body:
+        error_msg = extract_error_message(body) or ""
+        error_type = body.get("error", {}).get("type", "") if isinstance(body.get("error"), dict) else ""
+
+        # Common patterns indicating quota exhaustion (avoid "limit exceeded" - too broad for rate_limit)
+        quota_patterns = ["quota", "billing", "spend", "insufficient_quota", "plan"]
+        msg_lower = error_msg.lower()
+        type_lower = error_type.lower()
+
+        for pattern in quota_patterns:
+            if pattern in msg_lower or pattern in type_lower:
+                return ErrorClass.QUOTA_EXHAUSTED
+
+    # Try provider-specific classification (by_http_status)
     if provider_classification:
         by_status = provider_classification.get("by_http_status", {})
         status_str = str(status_code)
@@ -117,20 +153,6 @@ def classify_http_error(
                 return ErrorClass(by_status[status_str])
             except ValueError:
                 pass
-
-    # Check for quota exhaustion hints in body (429 may be quota or rate limit)
-    if status_code == 429 and body:
-        error_msg = extract_error_message(body) or ""
-        error_type = body.get("error", {}).get("type", "") if isinstance(body.get("error"), dict) else ""
-
-        # Common patterns indicating quota exhaustion
-        quota_patterns = ["quota", "billing", "spend", "limit exceeded", "plan"]
-        msg_lower = error_msg.lower()
-        type_lower = error_type.lower()
-
-        for pattern in quota_patterns:
-            if pattern in msg_lower or pattern in type_lower:
-                return ErrorClass.QUOTA_EXHAUSTED
 
     # Default mapping
     if status_code in _DEFAULT_STATUS_MAPPING:
@@ -148,17 +170,21 @@ def classify_http_error(
 def is_retryable(error_class: ErrorClass) -> bool:
     """Check if an error class is retryable by default.
 
+    Delegates to the V2 standard error code for authoritative retry semantics.
+
     Args:
         error_class: The error class to check
 
     Returns:
         True if the error is typically retryable
     """
-    return error_class in _RETRYABLE_CLASSES
+    return error_class.standard_code.retryable
 
 
 def is_fallbackable(error_class: ErrorClass) -> bool:
     """Check if an error class supports fallback to another model.
+
+    Delegates to the V2 standard error code for authoritative fallback semantics.
 
     Args:
         error_class: The error class to check
@@ -166,7 +192,7 @@ def is_fallbackable(error_class: ErrorClass) -> bool:
     Returns:
         True if fallback to another model is appropriate
     """
-    return error_class in _FALLBACKABLE_CLASSES
+    return error_class.standard_code.fallbackable
 
 
 def extract_error_message(body: dict[str, Any] | None) -> str | None:
@@ -191,13 +217,17 @@ def extract_error_message(body: dict[str, Any] | None) -> str | None:
     if "error" in body:
         error = body["error"]
         if isinstance(error, dict):
-            return error.get("message")
-        if isinstance(error, str):
+            msg = error.get("message")
+            if isinstance(msg, str):
+                return msg
+        elif isinstance(error, str):
             return error
 
     # Simple message field
     if "message" in body:
-        return body["message"]
+        msg = body["message"]
+        if isinstance(msg, str):
+            return msg
 
     # Detail field (common in some APIs)
     if "detail" in body:

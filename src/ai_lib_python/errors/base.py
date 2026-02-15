@@ -1,4 +1,5 @@
-"""
+"""错误基类：提供分层错误体系和结构化错误上下文。
+
 Base error classes for ai-lib-python.
 
 Provides a layered error hierarchy:
@@ -19,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ai_lib_python.errors.classification import ErrorClass
+    from ai_lib_python.errors.standard_codes import StandardErrorCode
 
 
 @dataclass
@@ -243,6 +245,8 @@ class RemoteError(AiLibError):
         ctx = ErrorContext(source="remote")
         ctx.details["status_code"] = status_code
         ctx.details["error_class"] = error_class.value
+        ctx.details["retryable"] = retryable
+        ctx.details["fallbackable"] = fallbackable
         if request_id:
             ctx.details["request_id"] = request_id
 
@@ -255,6 +259,11 @@ class RemoteError(AiLibError):
         self.raw_error = raw_error or {}
         self.retry_after = retry_after
         self.request_id = request_id
+
+    @property
+    def standard_code(self) -> StandardErrorCode:
+        """Return the AI-Protocol V2 StandardErrorCode for this error."""
+        return self.error_class.standard_code
 
     @classmethod
     def from_response(
