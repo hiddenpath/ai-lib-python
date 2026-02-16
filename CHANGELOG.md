@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-02-16
+
+### Added
+
+#### V2 Protocol Runtime Support (`protocol/v2/`)
+- V2 three-ring manifest model: `ManifestV2` with Ring1 (core), Ring2 (capabilities), Ring3 (extensions)
+- `CapabilitiesV2` with structured required/optional capability declarations
+- `EndpointV2`, `AuthConfigV2`, `StreamingV2` typed configuration models
+- Auto-promotion from V1 manifests with capability inference
+- API style detection (OpenAI-compatible, Anthropic Messages, Gemini Generate)
+
+#### Provider Drivers (`drivers/`)
+- `ProviderDriver` abstract base class for provider-specific API handling
+- `OpenAIDriver`: OpenAI-compatible API driver (OpenAI, DeepSeek, Moonshot, etc.)
+- `AnthropicDriver`: Anthropic Messages API driver with beta header support
+- `GeminiDriver`: Gemini GenerateContent API driver
+- `create_driver()` factory function with auto-detection
+
+#### MCP Tool Bridge (`mcp/`)
+- `McpToolBridge`: Namespace-based tool conversion between MCP and AI-Protocol formats
+- `mcp_tools_to_protocol()`: Convert MCP tool definitions to protocol function tools
+- `protocol_call_to_mcp()`: Route protocol tool calls back to MCP invocations
+- `mcp_result_to_protocol()`: Convert MCP results to protocol format
+- `extract_provider_config()`: Parse MCP configuration from V2 manifests
+
+#### Computer Use Abstraction (`computer_use/`)
+- `ComputerAction`: Typed action definitions (screenshot, click, type, scroll, navigate, key_press)
+- `SafetyPolicy`: Configurable safety enforcement with domain allowlists and action limits
+- `SafetyViolation`: Structured safety violation exceptions
+- `extract_provider_config()`: Parse CU configuration from V2 manifests
+- Implementation style detection (screen-based vs tool-based)
+
+#### Extended Multimodal (`multimodal/`)
+- `MultimodalCapabilities`: Input/output modality declarations with format validation
+- `Modality` enum: text, vision, audio, video, image_generation
+- `validate_content_modalities()`: Check content blocks against provider capabilities
+- `from_config()` class method for parsing manifest multimodal configuration
+
+#### Capability Registry (`registry/`)
+- `CapabilityRegistry`: Dynamic capability detection from V2 manifests
+- `from_capabilities()`: Build registry from `CapabilitiesV2`
+- `status_report()`: Generate capability status report (active, optional, unavailable)
+
+#### V2 Integration Tests (`tests/integration/test_v2_compliance.py`)
+- Full-chain tests: Manifest → Driver → Registry → MCP → CU → Multimodal
+- OpenAI, Anthropic, Gemini end-to-end compliance tests
+- MCP bridge round-trip tests
+- Computer Use safety enforcement tests
+- Multimodal validation tests
+
+### Fixed
+- Test manifest construction using correct `endpoints=EndpointV2(...)` field (was `endpoint=dict`)
+- Removed non-existent `status` field from test manifests
+
 ## [0.6.0] - 2026-02-15
 
 ### Added
@@ -502,7 +556,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mypy strict mode
 - ruff linting
 
-[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.7.0
 [0.6.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.6.0
 [0.5.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.5.0
 [0.4.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.4.0

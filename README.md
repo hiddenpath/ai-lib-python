@@ -68,7 +68,7 @@ asyncio.run(main())
 
 ## 🔄 V2 Protocol Alignment
 
-Starting with v0.5.0, `ai-lib-python` aligns with the **AI-Protocol V2** specification:
+Starting with v0.5.0, `ai-lib-python` aligns with the **AI-Protocol V2** specification. V0.7.0 adds full V2 runtime support including V2 manifest parsing, provider drivers, MCP tool bridge, Computer Use abstraction, extended multimodal, and capability registry.
 
 ### Standard Error Codes (V2)
 
@@ -875,10 +875,15 @@ ai-lib-python/
 │   │   └── validator.py    # OutputValidator
 │   ├── utils/              # Utilities
 │   │   └── tool_call_assembler.py  # ToolCallAssembler
+│   ├── drivers/            # V2 provider drivers (OpenAI, Anthropic, Gemini)
+│   ├── mcp/                # MCP tool bridge
+│   ├── computer_use/       # Computer Use abstraction
+│   ├── multimodal/         # Extended multimodal support
+│   ├── registry/           # Capability registry
 │   └── errors/             # Error hierarchy
 ├── tests/
 │   ├── unit/               # Unit tests
-│   └── integration/        # Integration tests
+│   └── integration/        # Integration tests (incl. V2 compliance)
 ├── docs/                   # Documentation
 ├── examples/               # Example scripts
 └── pyproject.toml
@@ -886,7 +891,7 @@ ai-lib-python/
 
 ## 📖 Related Projects
 
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - Protocol specification (v1.5)
+- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - Protocol specification (v1.5 / V2)
 - [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust) - Rust runtime implementation
 
 ## 🤝 Contributing
