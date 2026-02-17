@@ -23,3 +23,9 @@ COMPLIANCE_DIR = Path(
 def compliance_dir() -> Path:
     """Session fixture for the compliance test cases directory."""
     return COMPLIANCE_DIR
+
+
+@pytest.fixture(scope="session")
+def mock_http_url() -> str | None:
+    """Optional mock HTTP URL for compliance tests that need to hit ai-protocol-mock."""
+    return os.environ.get("MOCK_HTTP_URL")

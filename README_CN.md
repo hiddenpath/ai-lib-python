@@ -106,6 +106,20 @@ COMPLIANCE_DIR=../ai-protocol/tests/compliance pytest tests/compliance/ -v
 
 详细信息请参阅 [CROSS_RUNTIME.md](https://github.com/hiddenpath/ai-protocol/blob/main/docs/CROSS_RUNTIME.md)。
 
+### 使用 ai-protocol-mock 进行测试
+
+在无需真实 API 调用的集成和 MCP 端到端测试中，可使用 [ai-protocol-mock](https://github.com/hiddenpath/ai-protocol-mock)：
+
+```bash
+# 启动 mock 服务（在 ai-protocol-mock 仓库中）
+docker-compose up -d
+
+# 使用 mock 运行测试
+MOCK_HTTP_URL=http://localhost:4010 MOCK_MCP_URL=http://localhost:4010/mcp pytest tests/ -v
+```
+
+或在代码中：`AiClient.create("openai/gpt-4o", base_url="http://localhost:4010")`
+
 ## 📦 安装
 
 ```bash
@@ -158,6 +172,8 @@ pip install ai-lib-python[dev]
 | `AI_LIB_RPS` | 速率限制（每秒请求数） | - |
 | `AI_LIB_BREAKER_FAILURE_THRESHOLD` | 熔断器失败阈值 | 5 |
 | `AI_LIB_BREAKER_COOLDOWN_SECS` | 熔断器冷却秒数 | 30 |
+| `MOCK_HTTP_URL` | 测试用 mock 服务 URL（ai-protocol-mock） | - |
+| `MOCK_MCP_URL` | 测试用 mock MCP 端点 | - |
 
 ### 提供商 API 密钥
 

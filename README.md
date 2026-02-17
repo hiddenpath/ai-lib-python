@@ -106,6 +106,20 @@ COMPLIANCE_DIR=../ai-protocol/tests/compliance pytest tests/compliance/ -v
 
 For details, see [CROSS_RUNTIME.md](https://github.com/hiddenpath/ai-protocol/blob/main/docs/CROSS_RUNTIME.md).
 
+### Testing with ai-protocol-mock
+
+For integration and MCP e2e tests without real API calls, use [ai-protocol-mock](https://github.com/hiddenpath/ai-protocol-mock):
+
+```bash
+# Start mock server (from ai-protocol-mock repo)
+docker-compose up -d
+
+# Run tests with mock
+MOCK_HTTP_URL=http://localhost:4010 MOCK_MCP_URL=http://localhost:4010/mcp pytest tests/ -v
+```
+
+Or in code: `AiClient.create("openai/gpt-4o", base_url="http://localhost:4010")`
+
 ## 📦 Installation
 
 ```bash
@@ -158,6 +172,8 @@ Provider manifests are resolved in a backward-compatible order:
 | `AI_LIB_RPS` | Rate limit (requests per second) | - |
 | `AI_LIB_BREAKER_FAILURE_THRESHOLD` | Circuit breaker failure threshold | 5 |
 | `AI_LIB_BREAKER_COOLDOWN_SECS` | Circuit breaker cooldown seconds | 30 |
+| `MOCK_HTTP_URL` | Mock server URL for testing (ai-protocol-mock) | - |
+| `MOCK_MCP_URL` | Mock MCP endpoint for testing | - |
 
 ### Provider API Keys
 
