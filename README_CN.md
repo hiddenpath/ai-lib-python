@@ -68,7 +68,7 @@ asyncio.run(main())
 
 ## 🔄 V2 协议对齐
 
-从 v0.5.0 开始，`ai-lib-python` 与 **AI-Protocol V2** 规范对齐：
+从 v0.5.0 开始，`ai-lib-python` 与 **AI-Protocol V2** 规范对齐。V0.7.0 新增完整 V2 运行时支持，包括 V2 manifest 解析、Provider 驱动、MCP 工具桥接、Computer Use 抽象、扩展多模态及能力注册表。
 
 ### 标准错误码（V2）
 
@@ -139,6 +139,9 @@ pip install ai-lib-python[embeddings]    # 嵌入向量生成
 pip install ai-lib-python[structured]    # 结构化输出 / JSON 模式
 pip install ai-lib-python[batch]         # 批量处理
 pip install ai-lib-python[agentic]       # Agent 工作流支持
+pip install ai-lib-python[stt]           # 语音转文字（STT）
+pip install ai-lib-python[tts]           # 文字转语音（TTS）
+pip install ai-lib-python[reranking]     # 文档重排序
 
 # 基础设施 extras
 pip install ai-lib-python[telemetry]     # OpenTelemetry 集成
@@ -805,6 +808,11 @@ ruff format src tests
 ai-lib-python/
 ├── src/ai_lib_python/
 │   ├── __init__.py         # 包导出
+│   ├── drivers/            # V2 Provider 驱动（OpenAI、Anthropic、Gemini）
+│   ├── mcp/                # MCP 工具桥接
+│   ├── computer_use/       # Computer Use 抽象
+│   ├── multimodal/         # 扩展多模态支持
+│   ├── registry/            # 能力注册表
 │   ├── types/              # 类型定义
 │   │   ├── message.py      # Message, ContentBlock
 │   │   ├── tool.py         # ToolDefinition, ToolCall
@@ -884,7 +892,7 @@ ai-lib-python/
 
 ## 📖 相关项目
 
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - 协议规范（v1.5）
+- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - 协议规范（v1.5 / V2）
 - [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust) - Rust 运行时实现
 
 ## 🤝 贡献

@@ -139,6 +139,9 @@ pip install ai-lib-python[embeddings]    # Embedding generation
 pip install ai-lib-python[structured]    # Structured output / JSON mode
 pip install ai-lib-python[batch]         # Batch processing
 pip install ai-lib-python[agentic]       # Agent workflow support
+pip install ai-lib-python[stt]           # Speech-to-Text (STT)
+pip install ai-lib-python[tts]           # Text-to-Speech (TTS)
+pip install ai-lib-python[reranking]     # Document reranking
 
 # Infrastructure extras
 pip install ai-lib-python[telemetry]     # OpenTelemetry integration
