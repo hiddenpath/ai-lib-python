@@ -120,14 +120,18 @@ class OpenAiDriver(ProviderDriver):
         # role is stored as str because model uses use_enum_values=True
         role = m.role if isinstance(m.role, str) else m.role.value
         if isinstance(m.content, str):
-            return {"role": role, "content": m.content}
-        # list[ContentBlock] → OpenAI content array
-        blocks = []
-        for b in m.content:
-            if b.type == "text":
-                blocks.append({"type": "text", "text": b.text})
-            elif b.type == "image":
-                blocks.append(b.model_dump(by_alias=True))
-            else:
-                blocks.append(b.model_dump(by_alias=True))
-        return {"role": role, "content": blocks}
+            out: dict[str, Any] = {"role": role, "content": m.content}
+        else:
+            # list[ContentBlock] → OpenAI content array
+            blocks = []
+            for b in m.content:
+                if b.type == "text":
+                    blocks.append({"type": "text", "text": b.text})
+                elif b.type == "image":
+                    blocks.append(b.model_dump(by_alias=True))
+                else:
+                    blocks.append(b.model_dump(by_alias=True))
+            out = {"role": role, "content": blocks}
+        if role == "tool" and getattr(m, "tool_call_id", None):
+            out["tool_call_id"] = m.tool_call_id
+        return out
