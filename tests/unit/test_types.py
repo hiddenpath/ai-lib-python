@@ -33,6 +33,13 @@ class TestMessage:
         assert msg.role == MessageRole.ASSISTANT
         assert msg.content == "Hi there!"
 
+    def test_tool_message(self) -> None:
+        """Test creating a tool result message."""
+        msg = Message.tool("call_abc123", "42")
+        assert msg.role == MessageRole.TOOL
+        assert msg.content == "42"
+        assert msg.tool_call_id == "call_abc123"
+
     def test_message_with_content_blocks(self) -> None:
         """Test creating a message with content blocks."""
         blocks = [

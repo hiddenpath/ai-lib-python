@@ -162,6 +162,16 @@ class AnthropicDriver(ProviderDriver):
                     system_parts.append(m.content)
                 continue
 
+            if role == "tool":
+                # Anthropic: tool results as user message with tool_result block
+                tool_id = getattr(m, "tool_call_id", None)
+                if tool_id and isinstance(m.content, str):
+                    msgs.append({
+                        "role": "user",
+                        "content": [{"type": "tool_result", "tool_use_id": tool_id, "content": m.content}],
+                    })
+                continue
+
             if isinstance(m.content, str):
                 content: Any = [{"type": "text", "text": m.content}]
             else:

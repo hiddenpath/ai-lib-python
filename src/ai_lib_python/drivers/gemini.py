@@ -161,6 +161,16 @@ class GeminiDriver(ProviderDriver):
                     system_parts.append(m.content)
                 continue
 
+            if role == "tool":
+                # Gemini: function_response with name (tool_call_id) and response
+                tool_id = getattr(m, "tool_call_id", None)
+                if tool_id and isinstance(m.content, str):
+                    contents.append({
+                        "role": "user",
+                        "parts": [{"functionResponse": {"name": tool_id, "response": {"result": m.content}}}],
+                    })
+                continue
+
             gemini_role = "model" if role == "assistant" else "user"
 
             if isinstance(m.content, str):

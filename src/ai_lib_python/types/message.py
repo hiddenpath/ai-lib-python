@@ -19,11 +19,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class MessageRole(str, Enum):
-    """Message role enumeration."""
+    """Message role enumeration. Aligns with AI-Protocol standard_message_roles."""
 
     SYSTEM = "system"
     USER = "user"
     ASSISTANT = "assistant"
+    TOOL = "tool"
 
 
 class ImageSource(BaseModel):
@@ -210,11 +211,13 @@ class Message(BaseModel):
     - Message.system("prompt") - System message
     - Message.user("text") - User text message
     - Message.assistant("response") - Assistant response
+    - Message.tool(tool_call_id, content) - Tool result for multi-turn tool calling
     - Message.with_content(role, blocks) - Multimodal message
 
     Examples:
         >>> msg = Message.user("Hello!")
         >>> msg = Message.system("You are a helpful assistant.")
+        >>> msg = Message.tool("call_abc123", "42")
         >>> msg = Message.with_content(
         ...     MessageRole.USER,
         ...     [ContentBlock.text_block("Describe this:"), ContentBlock.image_from_file("photo.jpg")]
@@ -225,6 +228,23 @@ class Message(BaseModel):
 
     role: MessageRole = Field(description="Message role")
     content: MessageContent = Field(description="Message content (text or content blocks)")
+    tool_call_id: str | None = Field(
+        default=None,
+        description="Required when role is TOOL; references the tool_call id from assistant",
+    )
+
+    @classmethod
+    def tool(cls, tool_call_id: str, content: str) -> Message:
+        """Create a tool result message for multi-turn tool calling.
+
+        Args:
+            tool_call_id: ID of the tool call this result responds to
+            content: Tool execution result (text)
+
+        Returns:
+            Message with tool role
+        """
+        return cls(role=MessageRole.TOOL, content=content, tool_call_id=tool_call_id)
 
     @classmethod
     def system(cls, text: str) -> Message:
@@ -236,7 +256,7 @@ class Message(BaseModel):
         Returns:
             Message with system role
         """
-        return cls(role=MessageRole.SYSTEM, content=text)
+        return cls(role=MessageRole.SYSTEM, content=text, tool_call_id=None)
 
     @classmethod
     def user(cls, text: str) -> Message:
@@ -248,7 +268,7 @@ class Message(BaseModel):
         Returns:
             Message with user role
         """
-        return cls(role=MessageRole.USER, content=text)
+        return cls(role=MessageRole.USER, content=text, tool_call_id=None)
 
     @classmethod
     def assistant(cls, text: str) -> Message:
@@ -260,7 +280,7 @@ class Message(BaseModel):
         Returns:
             Message with assistant role
         """
-        return cls(role=MessageRole.ASSISTANT, content=text)
+        return cls(role=MessageRole.ASSISTANT, content=text, tool_call_id=None)
 
     @classmethod
     def with_content(
@@ -277,7 +297,7 @@ class Message(BaseModel):
         Returns:
             Message with the specified content blocks
         """
-        return cls(role=role, content=content)
+        return cls(role=role, content=content, tool_call_id=None)
 
     def contains_image(self) -> bool:
         """Check if the message contains image content."""
