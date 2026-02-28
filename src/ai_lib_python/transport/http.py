@@ -11,6 +11,7 @@ Provides:
 
 from __future__ import annotations
 
+import importlib.util
 import os
 from contextlib import asynccontextmanager, suppress
 from typing import TYPE_CHECKING, Any
@@ -32,6 +33,16 @@ _DEFAULT_CONNECT_TIMEOUT = 10.0
 
 
 _UA_VERSION: str | None = None
+
+
+def _http2_enabled() -> bool:
+    """Enable HTTP/2 only when optional dependency is present."""
+    return importlib.util.find_spec("h2") is not None
+
+
+def _trust_env_enabled() -> bool:
+    """Use env proxy settings only when explicitly enabled."""
+    return os.getenv("AI_HTTP_TRUST_ENV", "0") == "1"
 
 
 def _get_ua_version() -> str:
@@ -100,8 +111,13 @@ class HttpTransport:
         if self._timeout is None:
             self._timeout = _DEFAULT_TIMEOUT
 
-        # Resolve proxy
-        self._proxy = proxy or os.getenv("AI_PROXY_URL")
+        # Resolve proxy: default to direct connection unless trust_env is enabled.
+        if proxy is not None:
+            self._proxy = proxy
+        elif _trust_env_enabled():
+            self._proxy = os.getenv("AI_PROXY_URL")
+        else:
+            self._proxy = None
 
         # Build auth headers
         self._auth_headers = get_auth_header(
@@ -123,7 +139,8 @@ class HttpTransport:
                 base_url=self._base_url,
                 timeout=timeout,
                 proxy=self._proxy,
-                http2=True,  # Enable HTTP/2 for better performance
+                http2=_http2_enabled(),
+                trust_env=_trust_env_enabled(),
             )
 
         return self._client

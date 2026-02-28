@@ -1,0 +1,191 @@
+name: AI-Lib Python Benchmark
+
+on:
+  workflow_dispatch:
+
+jobs:
+  benchmark-smoke:
+    name: Smoke Test (Fast)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install httpx pytest
+          npm install -g autocannon
+      
+      - name: Verify Deepseek API Format (httpx)
+        run: |
+          python << 'EOFPYTHON'
+          import httpx
+          import json
+          import os
+          
+          api_key = os.getenv('DEEPSEEK_API_KEY')
+          if not api_key:
+              raise ValueError("DEEPSEEK_API_KEY not set")
+          
+          headers = {
+              "Authorization": f"Bearer {api_key}",
+              "Content-Type": "application/json"
+          }
+          
+          payload = {
+              "model": "deepseek-chat",
+              "messages": [{"role": "user", "content": "What is 1+1?"}],
+              "max_tokens": 50,
+              "temperature": 0.5
+          }
+          
+          response = httpx.post(
+              "https://api.deepseek.com/v1/chat/completions",
+              headers=headers,
+              json=payload,
+              timeout=30
+          )
+          
+          if response.status_code == 200:
+              data = response.json()
+              print(f"✓ Format valid | Model: {data.get('model')}")
+          else:
+              print(f"✗ HTTP {response.status_code}")
+              raise Exception(response.text)
+          EOFPYTHON
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      
+      - name: Run Smoke Benchmark (30s)
+        run: |
+          cat > benchmark_payload.json << 'EOF'
+          {"model":"deepseek-chat","messages":[{"role":"user","content":"What is 2+2?"}],"max_tokens":100,"temperature":0.5}
+          EOF
+          
+          autocannon \
+            -d 30 \
+            -c 3 \
+            -p 1 \
+            --method POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $DEEPSEEK_API_KEY" \
+            --input benchmark_payload.json \
+            --json https://api.deepseek.com/v1/chat/completions | tee smoke_test_py${{ matrix.python-version }}.json
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      
+      - name: Check Smoke Test Results
+        run: |
+          RPS=$(jq -r '.requests.average // 0' smoke_test_py${{ matrix.python-version }}.json)
+          echo "Python ${{ matrix.python-version }} Smoke Test: RPS=$RPS"
+          
+          if (( $(echo "$RPS < 5" | bc -l) )); then
+            echo "❌ RPS too low"
+            exit 1
+          fi
+          echo "✓ Passed"
+      
+      - name: Upload Smoke Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-smoke-test-py${{ matrix.python-version }}
+          path: smoke_test_py${{ matrix.python-version }}.json
+          retention-days: 30
+
+  benchmark-full:
+    name: Full Benchmark (Nightly)
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * *'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install httpx
+          npm install -g autocannon
+          sudo apt-get update && sudo apt-get install -y jq
+      
+      - name: Run Full Benchmark (3 runs × 60s)
+        run: |
+          mkdir -p benchmark_results
+          
+          cat > benchmark_payload.json << 'EOF'
+          {"model":"deepseek-chat","messages":[{"role":"user","content":"Explain machine learning in one paragraph"}],"max_tokens":200,"temperature":0.7}
+          EOF
+          
+          for i in {1..3}; do
+            echo "[Run $i] Starting benchmark..."
+            autocannon \
+              -d 60 \
+              -c 5 \
+              -p 1 \
+              --method POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $DEEPSEEK_API_KEY" \
+              --input benchmark_payload.json \
+              --json https://api.deepseek.com/v1/chat/completions | tee benchmark_results/run_$i.json
+            
+            sleep 10
+          done
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      
+      - name: Generate Report
+        run: |
+          python << 'EOFPYTHON'
+          import json
+          from datetime import datetime
+          
+          results = []
+          for i in range(1, 4):
+              with open(f'benchmark_results/run_{i}.json') as f:
+                  data = json.load(f)
+                  results.append({
+                      'run': i,
+                      'rps': data['requests']['average'],
+                      'p99': data['latency']['p99'],
+                      'total_requests': data['requests']['total']
+                  })
+          
+          markdown = f"""# AI-Lib Python Benchmark Report - {datetime.utcnow()}
+          
+## Results Summary
+
+| Run | RPS | P99 Latency | Requests |
+|-----|-----|-------------|----------|
+"""
+          
+          for r in results:
+              markdown += f"| {r['run']} | {r['rps']:.1f} | {r['p99']:.0f}ms | {r['total_requests']} |\n"
+          
+          avg_rps = sum(r['rps'] for r in results) / len(results)
+          markdown += f"\n**Average RPS**: {avg_rps:.1f}\n"
+          
+          with open('BENCHMARK_REPORT.md', 'w') as f:
+              f.write(markdown)
+          EOFPYTHON
+      
+      - name: Upload Full Benchmark Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-benchmark-results-nightly
+          path: |
+            benchmark_results/
+            BENCHMARK_REPORT.md
+          retention-days: 90
