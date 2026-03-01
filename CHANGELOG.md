@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-02-28
+
+### Added
+
+- New public clients/modules for STT, TTS, and Rerank:
+  - `ai_lib_python.stt` (`SttClient`, `SttClientBuilder`, typed transcription models)
+  - `ai_lib_python.tts` (`TtsClient`, `TtsClientBuilder`, `AudioFormat`, `AudioOutput`)
+  - `ai_lib_python.rerank` (`RerankerClient`, `RerankerClientBuilder`, rerank result models)
+- Portable benchmark scaffolding (`benchmarks/`) and on-demand benchmark workflow entrypoint
+- Mock E2E scenario coverage for chat/tool/streaming path (`tests/integration/test_mock_chat_e2e.py`)
+
+### Changed
+
+- HTTP transport now degrades gracefully when optional `h2` dependency is unavailable
+- Proxy environment usage is now opt-in (`AI_HTTP_TRUST_ENV=1`) to reduce accidental proxy interference in local/mock tests
+- Mock health/check path in tests uses `trust_env=False` for deterministic local behavior
+- README/README_CN and extras metadata aligned for mock test usage and STT/TTS/Rerank extras
+
 ## [0.7.0] - 2026-02-16
 
 ### Added

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ai-lib-python"
-version = "0.7.1"
+version = "0.7.5"
 description = "Official Python Runtime for AI-Protocol - The canonical Pythonic implementation for unified AI model interaction"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
@@ -43,6 +43,9 @@ embeddings = []
 structured = []
 batch = []
 agentic = []
+stt = []
+tts = []
+reranking = []
 
 # Infrastructure extras
 telemetry = [
@@ -56,7 +59,7 @@ tokenizer = ["tiktoken>=0.5"]
 full = [
     "watchdog>=3.0",
     "keyring>=24.0",
-    "ai-lib-python[vision,audio,embeddings,structured,batch,agentic,telemetry,tokenizer]",
+    "ai-lib-python[vision,audio,embeddings,structured,batch,agentic,stt,tts,reranking,telemetry,tokenizer]",
 ]
 jupyter = ["ipywidgets>=8.0"]
 dev = [

@@ -116,7 +116,12 @@ docker-compose up -d
 
 # Run tests with mock
 MOCK_HTTP_URL=http://localhost:4010 MOCK_MCP_URL=http://localhost:4010/mcp pytest tests/ -v
+
+# Run only mock E2E tests (chat, streaming, tools, MCP)
+MOCK_HTTP_URL=http://localhost:4010 pytest tests/integration/test_mock_chat_e2e.py tests/integration/test_mcp_bridge_e2e.py -v
 ```
+
+With proxy: set `NO_PROXY` to include the mock server IP (e.g. `NO_PROXY=192.168.2.13,localhost,127.0.0.1`).
 
 Or in code: `AiClient.create("openai/gpt-4o", base_url="http://localhost:4010")`
 
