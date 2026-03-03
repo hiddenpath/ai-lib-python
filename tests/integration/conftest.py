@@ -163,19 +163,18 @@ def setup_mock_openai_response(
     actual_content = content or "Hello from OpenAI!"
 
     if stream:
-        chunks = mock_openai_streaming_chunks(actual_content, model)
+        json_body = mock_openai_streaming_chunks(actual_content, model)
     else:
-        chunks = [mock_openai_chat_response(actual_content, model, stream)]
+        json_body = mock_openai_chat_response(actual_content, model, stream)
 
     url = "https://api.openai.com/v1/chat/completions"
     httpx_mock.add_response(
         url=url,
         method="POST",
-        json=chunks,
-        callback=lambda request, response: None,
+        json=json_body,
     )
 
-    return chunks
+    return json_body if isinstance(json_body, list) else [json_body]
 
 
 def setup_mock_anthropic_response(
@@ -188,18 +187,18 @@ def setup_mock_anthropic_response(
     actual_content = content or "Hello from Anthropic!"
 
     if stream:
-        chunks = mock_anthropic_streaming_chunks(actual_content, model)
+        json_body = mock_anthropic_streaming_chunks(actual_content, model)
     else:
-        chunks = [mock_anthropic_chat_response(actual_content, model, stream)]
+        json_body = mock_anthropic_chat_response(actual_content, model, stream)
 
     url = "https://api.anthropic.com/v1/messages"
     httpx_mock.add_response(
         url=url,
         method="POST",
-        json=chunks,
+        json=json_body,
     )
 
-    return chunks
+    return json_body if isinstance(json_body, list) else [json_body]
 
 
 def mock_openai_tool_call_response(

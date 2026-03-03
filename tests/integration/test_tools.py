@@ -32,7 +32,7 @@ class TestToolCalling:
         httpx_mock.add_response(
             url="https://api.openai.com/v1/chat/completions",
             method="POST",
-            json=[mock_openai_tool_call_response(tool_name="get_weather", tool_args={"city": "Tokyo"})],
+            json=mock_openai_tool_call_response(tool_name="get_weather", tool_args={"city": "Tokyo"}),
         )
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
@@ -67,7 +67,7 @@ class TestToolCalling:
         httpx_mock.add_response(
             url="https://api.anthropic.com/v1/messages",
             method="POST",
-            json=[mock_anthropic_tool_call_response(tool_name="get_weather", tool_input={"city": "Tokyo"})],
+            json=mock_anthropic_tool_call_response(tool_name="get_weather", tool_input={"city": "Tokyo"}),
         )
 
         client = await AiClient.create("anthropic/claude-3-5-sonnet", api_key="sk-ant-test")
@@ -111,7 +111,7 @@ class TestToolCalling:
         httpx_mock.add_response(
             url="https://api.openai.com/v1/chat/completions",
             method="POST",
-            json=[mock_openai_tool_call_response(tool_name="get_time", tool_args={"timezone": "UTC"})],
+            json=mock_openai_tool_call_response(tool_name="get_time", tool_args={"timezone": "UTC"}),
         )
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
@@ -173,7 +173,7 @@ class TestToolCalling:
         httpx_mock.add_response(
             url="https://api.openai.com/v1/chat/completions",
             method="POST",
-            json=[mock_openai_tool_call_response()],
+            json=mock_openai_tool_call_response(),
         )
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
@@ -196,11 +196,16 @@ class TestToolCalling:
         httpx_mock.add_response(
             url="https://api.openai.com/v1/chat/completions",
             method="POST",
-            json=[mock_openai_tool_call_response()],
+            json=mock_openai_tool_call_response(),
         )
 
         # Second call: final response
-        setup_mock_openai_response(httpx_mock, content="Based on the weather report")
+        from tests.integration.conftest import mock_openai_chat_response
+        httpx_mock.add_response(
+            url="https://api.openai.com/v1/chat/completions",
+            method="POST",
+            json=mock_openai_chat_response(content="Based on the weather report"),
+        )
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
         tool = ToolDefinition.from_function(
@@ -226,7 +231,7 @@ class TestToolCalling:
         # Convert tool response to message
         from ai_lib_python.types.tool import ToolCall
         tool_call = response.tool_calls[0]
-        tool_message = ToolCall.to_message(tool_call, {"result": "25 degrees"])
+        tool_message = ToolCall.to_message(tool_call, {"result": "25 degrees"})
 
         # Second request with tool result
         response2 = await (
