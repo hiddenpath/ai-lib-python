@@ -118,6 +118,24 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = [
+    "ai_lib_python.batch.collector",
+    "ai_lib_python.cache.manager",
+    "ai_lib_python.client.cancel",
+    "ai_lib_python.embeddings.client",
+    "ai_lib_python.guardrails.*",
+    "ai_lib_python.pipeline.*",
+    "ai_lib_python.protocol.loader",
+    "ai_lib_python.protocol.manifest",
+    "ai_lib_python.resilience.*",
+    "ai_lib_python.structured.*",
+    "ai_lib_python.telemetry.health",
+    "ai_lib_python.telemetry.logger",
+    "ai_lib_python.transport.http",
+]
+ignore_errors = true
+
 [tool.ruff]
 target-version = "py310"
 line-length = 100

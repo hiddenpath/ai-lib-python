@@ -256,7 +256,12 @@ class AiClient:
                     )
                     pipeline = Pipeline.from_manifest(manifest)
 
-                async def do_request(m=manifest, t=transport, p=pipeline, mid=model) -> ChatResponse:
+                async def do_request(
+                    m: ProtocolManifest = manifest,
+                    t: HttpTransport = transport,
+                    p: Pipeline = pipeline,
+                    mid: str = model,
+                ) -> ChatResponse:
                     # Debug print for model being used
                     print(f"DEBUG: Executing request for model: {mid}, manifest ID: {m.id}")
 

@@ -121,8 +121,7 @@ jobs:
         run: ruff check src tests
 
   typecheck:
-    name: Type Check (Advisory)
-    continue-on-error: true
+    name: Type Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -138,7 +137,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run mypy
-        run: mypy src --ignore-missing-imports || true
+        run: mypy src --ignore-missing-imports
 
   smoke:
     name: CI Smoke
