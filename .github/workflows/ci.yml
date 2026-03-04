@@ -103,8 +103,7 @@ jobs:
           fail_ci_if_error: false
 
   lint:
-    name: Lint (Advisory)
-    continue-on-error: true
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -120,7 +119,7 @@ jobs:
           pip install ruff
 
       - name: Check linting
-        run: ruff check src tests --exit-zero
+        run: ruff check src tests
 
   typecheck:
     name: Type Check (Advisory)
