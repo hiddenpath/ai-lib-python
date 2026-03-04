@@ -12,8 +12,7 @@ concurrency:
 
 jobs:
   test:
-    name: Test Python ${{ matrix.python-version }} (Advisory)
-    continue-on-error: true
+    name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -51,7 +50,7 @@ jobs:
         env:
           AI_PROTOCOL_DIR: ${{ github.workspace }}/ai-protocol
         run: |
-          pytest tests/unit tests/compliance -v --cov=src/ai_lib_python --cov-report=xml --cov-report=term-missing || true
+          pytest tests/unit tests/compliance -v --cov=src/ai_lib_python --cov-report=xml --cov-report=term-missing
 
   test-with-mock:
     name: Test with ai-protocol-mock

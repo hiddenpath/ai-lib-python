@@ -1,5 +1,9 @@
 """Tests for protocol module."""
 
+import json
+import os
+from pathlib import Path
+
 import pytest
 
 from ai_lib_python.protocol import (
@@ -127,32 +131,25 @@ class TestDecoderConfig:
 class TestProtocolValidator:
     """Tests for ProtocolValidator."""
 
+    @staticmethod
+    def _load_real_manifest() -> dict:
+        """Load a real manifest from ai-protocol checkout if available."""
+        protocol_dir = os.getenv("AI_PROTOCOL_DIR")
+        if protocol_dir:
+            manifest_path = Path(protocol_dir) / "dist" / "v1" / "providers" / "openai.json"
+            if manifest_path.exists():
+                return json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        local_manifest = Path(__file__).resolve().parents[3] / "ai-protocol" / "dist" / "v1" / "providers" / "openai.json"
+        if local_manifest.exists():
+            return json.loads(local_manifest.read_text(encoding="utf-8"))
+
+        pytest.skip("ai-protocol manifest not available")
+
     def test_validate_valid_manifest(self) -> None:
         """Test validating a valid manifest."""
         validator = ProtocolValidator()
-        data = {
-            "id": "openai",
-            "protocol_version": "1.5",
-            "name": "OpenAI",
-            "endpoint": {"base_url": "https://api.openai.com/v1"},
-            "endpoints": {"chat": {"path": "/chat/completions", "method": "POST", "adapter": "openai"}},
-            "capabilities": {"streaming": True, "tools": True},
-            "error_classification": {"by_http_status": {"400": "invalid_request", "429": "rate_limited"}},
-            "parameter_mappings": {"temperature": "temperature", "max_tokens": "max_tokens"},
-            "response_paths": {
-                "content": "choices[0].message.content",
-                "finish_reason": "choices[0].finish_reason",
-            },
-            "streaming": {
-                "decoder": {
-                    "format": "sse",
-                    "delimiter": "\n\n",
-                    "prefix": "data: ",
-                    "done_signal": "[DONE]",
-                },
-                "event_map": [],
-            },
-        }
+        data = self._load_real_manifest()
         result = validator.validate(data)
         assert result.valid is True
         assert len(result.errors) == 0
@@ -187,29 +184,7 @@ class TestProtocolValidator:
     def test_is_valid(self) -> None:
         """Test is_valid convenience method."""
         validator = ProtocolValidator()
-        assert validator.is_valid({
-            "id": "openai",
-            "protocol_version": "1.5",
-            "name": "OpenAI",
-            "endpoint": {"base_url": "https://api.openai.com/v1"},
-            "endpoints": {"chat": {"path": "/chat/completions", "method": "POST", "adapter": "openai"}},
-            "capabilities": {"streaming": True},
-            "error_classification": {"by_http_status": {"400": "invalid_request", "429": "rate_limited"}},
-            "parameter_mappings": {"temperature": "temperature"},
-            "response_paths": {
-                "content": "choices[0].message.content",
-                "finish_reason": "choices[0].finish_reason",
-            },
-            "streaming": {
-                "decoder": {
-                    "format": "sse",
-                    "delimiter": "\n\n",
-                    "prefix": "data: ",
-                    "done_signal": "[DONE]",
-                },
-                "event_map": [],
-            },
-        })
+        assert validator.is_valid(self._load_real_manifest())
         assert not validator.is_valid({})
 
 
