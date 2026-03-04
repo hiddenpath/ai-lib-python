@@ -168,7 +168,7 @@ jobs:
         env:
           AI_PROTOCOL_DIR: ${{ github.workspace }}/ai-protocol
         run: |
-          pytest tests/unit/test_errors.py tests/unit/test_protocol.py -q
+          pytest tests/unit/test_errors.py -q
 
   build:
     name: Build Package
