@@ -120,12 +120,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
-    "ai_lib_python.embeddings.client",
     "ai_lib_python.guardrails.*",
     "ai_lib_python.pipeline.*",
     "ai_lib_python.resilience.*",
     "ai_lib_python.structured.*",
-    "ai_lib_python.telemetry.health",
 ]
 ignore_errors = true
 
