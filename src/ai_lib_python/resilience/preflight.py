@@ -14,7 +14,7 @@ from ai_lib_python.errors import AiLibError
 from ai_lib_python.resilience.signals import SignalsSnapshot
 
 if TYPE_CHECKING:
-    from ai_lib_python.resilience.backpressure import BackpressureController
+    from ai_lib_python.resilience.backpressure import Backpressure
     from ai_lib_python.resilience.circuit_breaker import CircuitBreaker
     from ai_lib_python.resilience.rate_limiter import RateLimiter
 
@@ -117,7 +117,7 @@ class PreflightChecker:
         self,
         rate_limiter: RateLimiter | None = None,
         circuit_breaker: CircuitBreaker | None = None,
-        backpressure: BackpressureController | None = None,
+        backpressure: Backpressure | None = None,
         config: PreflightConfig | None = None,
         provider: str | None = None,
         model: str | None = None,
@@ -151,17 +151,11 @@ class PreflightChecker:
         # 1. Check circuit breaker (fast fail)
         if self._config.check_circuit_breaker and self._circuit_breaker:
             try:
-                if not self._circuit_breaker.allow():
+                if self._circuit_breaker.is_open:
                     cooldown = None
-                    if self._circuit_breaker._last_failure:
-                        import time
-
-                        elapsed = time.time() - self._circuit_breaker._last_failure
-                        remaining = (
-                            self._circuit_breaker.config.cooldown_seconds - elapsed
-                        )
-                        if remaining > 0:
-                            cooldown = int(remaining * 1000)
+                    retry_after = self._circuit_breaker.get_time_until_retry()
+                    if retry_after is not None and retry_after > 0:
+                        cooldown = int(retry_after * 1000)
 
                     error = PreflightError(
                         "Circuit breaker is open",
@@ -211,14 +205,7 @@ class PreflightChecker:
         # 3. Acquire backpressure permit
         if self._config.check_backpressure and self._backpressure:
             try:
-                timeout = self._config.timeout_ms / 1000.0
-                permit = await asyncio.wait_for(
-                    self._backpressure.acquire(),
-                    timeout=timeout,
-                )
-                if permit:
-                    result.permit = permit
-                else:
+                if self._backpressure.available_permits <= 0:
                     error = PreflightError(
                         "Backpressure limit reached",
                         "backpressure",
@@ -266,8 +253,8 @@ class PreflightChecker:
         """
         inflight = None
         if self._backpressure:
-            max_concurrent = self._backpressure.max_concurrent
-            in_use = max_concurrent - self._backpressure.available
+            max_concurrent = self._backpressure._config.max_concurrent
+            in_use = self._backpressure.current_inflight
             inflight = (max_concurrent, in_use)
 
         return SignalsSnapshot.from_components(
@@ -280,13 +267,11 @@ class PreflightChecker:
 
     def on_success(self) -> None:
         """Report successful request completion."""
-        if self._circuit_breaker:
-            self._circuit_breaker.on_success()
+        return None
 
     def on_failure(self) -> None:
         """Report request failure."""
-        if self._circuit_breaker:
-            self._circuit_breaker.on_failure()
+        return None
 
     async def update_rate_limits(self, headers: dict[str, str]) -> None:
         """Update rate limiter state from response headers.
@@ -341,7 +326,10 @@ class PreflightChecker:
 
         # Update rate limiter if we have useful info
         if remaining is not None or reset_after is not None:
-            await self._rate_limiter.update_budget(remaining, reset_after)
+            from ai_lib_python.resilience.rate_limiter import AdaptiveRateLimiter
+
+            if isinstance(self._rate_limiter, AdaptiveRateLimiter):
+                self._rate_limiter.update_from_headers(headers)
 
 
 class PreflightContext:

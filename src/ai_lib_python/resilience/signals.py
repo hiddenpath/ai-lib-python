@@ -249,8 +249,8 @@ class SignalsSnapshot:
         if rate_limiter:
             rate_snap = RateLimiterSnapshot(
                 tokens_available=rate_limiter.available_tokens,
-                max_tokens=rate_limiter.config.bucket_size,
-                refill_rate=rate_limiter.config.refill_rate,
+                max_tokens=float(rate_limiter._config.burst_size or 1),
+                refill_rate=rate_limiter._config.requests_per_second,
                 is_throttled=rate_limiter.available_tokens <= 0,
             )
 
@@ -259,18 +259,18 @@ class SignalsSnapshot:
             import time
 
             cooldown = None
-            if circuit_breaker.state.value == "open" and circuit_breaker._last_failure:
-                elapsed = time.time() - circuit_breaker._last_failure
-                remaining = circuit_breaker.config.cooldown_seconds - elapsed
+            if circuit_breaker.state.value == "open" and circuit_breaker._last_failure_time:
+                elapsed = time.monotonic() - circuit_breaker._last_failure_time
+                remaining = circuit_breaker._config.cooldown_seconds - elapsed
                 if remaining > 0:
                     cooldown = remaining * 1000
 
             breaker_snap = CircuitBreakerSnapshot(
                 state=circuit_breaker.state.value,
                 failure_count=circuit_breaker._failure_count,
-                failure_threshold=circuit_breaker.config.failure_threshold,
+                failure_threshold=circuit_breaker._config.failure_threshold,
                 success_count=circuit_breaker._success_count,
-                last_failure_time=circuit_breaker._last_failure,
+                last_failure_time=circuit_breaker._last_failure_time,
                 cooldown_remaining_ms=cooldown,
             )
 

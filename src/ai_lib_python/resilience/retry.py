@@ -10,7 +10,7 @@ import asyncio
 import random
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from ai_lib_python.errors import ErrorClass, RemoteError, is_retryable
 
@@ -294,6 +294,7 @@ async def with_retry(
     result = await policy.execute(operation, on_retry)
 
     if result.success:
-        return result.value
-    else:
-        raise result.error  # type: ignore
+        return cast("T", result.value)
+    if result.error is not None:
+        raise result.error
+    raise RuntimeError("Retry operation failed without error")
