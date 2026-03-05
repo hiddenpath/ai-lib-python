@@ -30,7 +30,7 @@ class FallbackTarget:
     """
 
     name: str
-    operation: Callable[..., Awaitable[T]]
+    operation: Callable[..., Awaitable[Any]]
     weight: float = 1.0
     enabled: bool = True
 
@@ -94,7 +94,7 @@ class FallbackChain:
     def add_target(
         self,
         name: str,
-        operation: Callable[..., Awaitable[T]],
+        operation: Callable[..., Awaitable[Any]],
         weight: float = 1.0,
         enabled: bool = True,
     ) -> FallbackChain:
@@ -218,7 +218,7 @@ class FallbackChain:
 
             for attempt in range(self._config.max_attempts_per_target):
                 try:
-                    result = await target.operation(*args, **kwargs)
+                    result: Any = await target.operation(*args, **kwargs)
                     return FallbackResult(
                         success=True,
                         value=result,

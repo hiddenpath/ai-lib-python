@@ -9,7 +9,7 @@ retry, rate limiting, circuit breaking, and backpressure.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from ai_lib_python.resilience.backpressure import Backpressure, BackpressureConfig
 from ai_lib_python.resilience.circuit_breaker import (
@@ -229,8 +229,10 @@ class ResilientExecutor:
         if self._retry:
             result = await self._retry.execute(operation, on_retry)
             if result.success:
-                return result.value
-            raise result.error  # type: ignore
+                return cast("T", result.value)
+            if result.error is not None:
+                raise result.error
+            raise RuntimeError("Retry execution failed without error")
         else:
             return await operation()
 
@@ -300,8 +302,10 @@ class ResilientExecutor:
                 result = await self._retry.execute(operation, on_retry)
                 stats.retry_result = result
                 if result.success:
-                    return result.value
-                raise result.error  # type: ignore
+                    return cast("T", result.value)
+                if result.error is not None:
+                    raise result.error
+                raise RuntimeError("Retry execution failed without error")
             return await operation()
 
         if self._circuit_breaker:
