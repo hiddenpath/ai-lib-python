@@ -120,9 +120,6 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
-    "ai_lib_python.batch.collector",
-    "ai_lib_python.cache.manager",
-    "ai_lib_python.client.cancel",
     "ai_lib_python.embeddings.client",
     "ai_lib_python.guardrails.*",
     "ai_lib_python.pipeline.*",
