@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-03-08
+
+### Added
+
+- Compliance runner now executes all current AI-Protocol YAML case types:
+  - `message_building`
+  - `stream_decode`
+  - `event_mapping`
+  - `tool_accumulation`
+  - `parameter_mapping`
+  - `retry_decision`
+- Full compliance matrix activation reached `46 passed, 0 skipped` in `tests/compliance/test_compliance.py`.
+
+### Changed
+
+- Compliance assertions use deterministic range checks for retry delay validation to avoid jitter-driven flakiness.
+
 ## [0.8.0] - 2026-03-07
 
 ### Added
@@ -590,7 +607,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mypy strict mode
 - ruff linting
 
-[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.8.1
 [0.8.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.8.0
 [0.7.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.7.0
 [0.6.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.6.0

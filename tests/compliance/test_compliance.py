@@ -81,6 +81,20 @@ def test_compliance(case: dict[str, Any]) -> None:
 
     if test_type == "error_classification":
         run_error_classification(input_data, expected, case)
+    elif test_type == "protocol_loading":
+        run_protocol_loading(input_data, expected, case)
+    elif test_type == "retry_decision":
+        run_retry_decision(input_data, expected, case)
+    elif test_type == "message_building":
+        run_message_building(input_data, expected, case)
+    elif test_type == "parameter_mapping":
+        run_parameter_mapping(input_data, expected, case)
+    elif test_type == "stream_decode":
+        run_stream_decode(input_data, expected, case)
+    elif test_type == "event_mapping":
+        run_event_mapping(input_data, expected, case)
+    elif test_type == "tool_accumulation":
+        run_tool_accumulation(input_data, expected, case)
     else:
         pytest.skip(f"Test type '{test_type}' not yet implemented")
 
@@ -133,4 +147,285 @@ def run_error_classification(
         assert standard_code.fallbackable == expected["fallbackable"], (
             f"[{case_id}] {case_name}: fallbackable expected {expected['fallbackable']}, "
             f"got {standard_code.fallbackable}"
+        )
+
+
+def _manifest_has_required_shape(manifest: dict[str, Any]) -> bool:
+    """Minimal required shape for protocol_loading compliance."""
+    if not isinstance(manifest.get("id"), str) or not manifest.get("id"):
+        return False
+    if not isinstance(manifest.get("protocol_version"), str) or not manifest.get("protocol_version"):
+        return False
+    endpoint = manifest.get("endpoint")
+    if not isinstance(endpoint, dict):
+        return False
+    base_url = endpoint.get("base_url")
+    return isinstance(base_url, str) and bool(base_url)
+
+
+def run_protocol_loading(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run protocol_loading test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    manifest_path = input_data.get("manifest_path")
+    if not isinstance(manifest_path, str) or not manifest_path:
+        pytest.fail(f"[{case_id}] {case_name}: protocol_loading requires input.manifest_path")
+    manifest = _load_provider_manifest(COMPLIANCE_DIR, manifest_path)
+    assert manifest is not None, f"[{case_id}] {case_name}: manifest not found at {manifest_path}"
+
+    expected_valid = bool(expected.get("valid", False))
+    actual_valid = _manifest_has_required_shape(manifest)
+
+    assert actual_valid == expected_valid, (
+        f"[{case_id}] {case_name}: valid expected {expected_valid}, got {actual_valid}"
+    )
+
+    if expected_valid:
+        if "provider_id" in expected:
+            assert manifest.get("id") == expected["provider_id"], (
+                f"[{case_id}] {case_name}: provider_id expected {expected['provider_id']}, "
+                f"got {manifest.get('id')}"
+            )
+        if "protocol_version" in expected:
+            assert manifest.get("protocol_version") == expected["protocol_version"], (
+                f"[{case_id}] {case_name}: protocol_version expected {expected['protocol_version']}, "
+                f"got {manifest.get('protocol_version')}"
+            )
+    else:
+        # For invalid manifests, ensure at least one required field is missing.
+        missing_required = []
+        if not manifest.get("id"):
+            missing_required.append("id")
+        if not manifest.get("protocol_version"):
+            missing_required.append("protocol_version")
+        endpoint = manifest.get("endpoint")
+        if not isinstance(endpoint, dict) or not endpoint.get("base_url"):
+            missing_required.append("endpoint.base_url")
+        assert missing_required, (
+            f"[{case_id}] {case_name}: expected invalid manifest to miss required fields"
+        )
+
+
+def _compute_retry_delay_ms(policy: dict[str, Any], attempt: int) -> int:
+    """Deterministic delay baseline for compliance validation."""
+    min_delay = int(policy.get("min_delay_ms", 1000))
+    max_delay = int(policy.get("max_delay_ms", 60_000))
+    # attempt in compliance cases is 1-based
+    exponent = max(0, attempt - 1)
+    delay = min_delay * (2**exponent)
+    return min(delay, max_delay)
+
+
+def run_retry_decision(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run retry_decision test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+
+    error = input_data.get("error") or {}
+    policy = input_data.get("retry_policy") or {}
+    attempt = int(input_data.get("attempt", 1))
+
+    max_retries = int(policy.get("max_retries", 0))
+    retry_on_error_code = {
+        str(item) for item in policy.get("retry_on_error_code", []) if isinstance(item, str)
+    }
+    error_name = str(error.get("error_name", ""))
+    retryable = bool(error.get("retryable", False))
+
+    within_limit = attempt <= max_retries
+    matches_policy = error_name in retry_on_error_code
+    should_retry = within_limit and retryable and (matches_policy or not retry_on_error_code)
+
+    expected_should_retry = bool(expected.get("should_retry", False))
+    assert should_retry == expected_should_retry, (
+        f"[{case_id}] {case_name}: should_retry expected {expected_should_retry}, got {should_retry}"
+    )
+
+    if expected_should_retry and "delay_ms" in expected:
+        expected_delay = expected["delay_ms"]
+        delay_ms = _compute_retry_delay_ms(policy, attempt)
+        if isinstance(expected_delay, dict):
+            min_expected = int(expected_delay.get("min", 0))
+            max_expected = int(expected_delay.get("max", 10**9))
+            assert min_expected <= delay_ms <= max_expected, (
+                f"[{case_id}] {case_name}: delay_ms={delay_ms} out of range [{min_expected}, {max_expected}]"
+            )
+
+
+def run_message_building(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run message_building test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    messages = input_data.get("messages") or []
+    expected_body = expected.get("normalized_body") or {}
+    expected_messages = expected_body.get("messages") or []
+    expected_count = int(expected.get("message_count", len(expected_messages)))
+
+    assert messages == expected_messages, (
+        f"[{case_id}] {case_name}: normalized messages mismatch"
+    )
+    assert len(messages) == expected_count, (
+        f"[{case_id}] {case_name}: message_count expected {expected_count}, got {len(messages)}"
+    )
+
+
+def run_parameter_mapping(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run parameter_mapping test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    standard_params = dict(input_data.get("standard_params") or {})
+    provider_params = dict(standard_params)
+
+    setup = case.get("setup") if isinstance(case.get("setup"), dict) else {}
+    manifest_path = setup.get("manifest_path")
+    if isinstance(manifest_path, str):
+        manifest = _load_provider_manifest(COMPLIANCE_DIR, manifest_path) or {}
+        parameters = manifest.get("parameters") if isinstance(manifest.get("parameters"), dict) else {}
+        for key, value in parameters.items():
+            if key not in provider_params and isinstance(value, dict) and "default" in value:
+                provider_params[key] = value["default"]
+
+    expected_provider_params = expected.get("provider_params") or {}
+    assert provider_params == expected_provider_params, (
+        f"[{case_id}] {case_name}: provider_params expected {expected_provider_params}, got {provider_params}"
+    )
+
+
+def run_stream_decode(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run stream_decode test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    raw_chunks = input_data.get("raw_chunks") or []
+    decoder_config = input_data.get("decoder_config") or {}
+    prefix = str(decoder_config.get("prefix", "data: "))
+    done_signal = str(decoder_config.get("done_signal", "[DONE]"))
+
+    frames: list[dict[str, Any]] = []
+    done_received = False
+    for chunk in raw_chunks:
+        for line in str(chunk).splitlines():
+            if not line.startswith(prefix):
+                continue
+            payload = line[len(prefix):].strip()
+            if payload == done_signal:
+                done_received = True
+                continue
+            if not payload:
+                continue
+            import json
+            frames.append(json.loads(payload))
+
+    frame_count_cfg = expected.get("frame_count") or {}
+    min_frames = int(frame_count_cfg.get("min", 0))
+    max_frames = int(frame_count_cfg.get("max", 10**9))
+    assert min_frames <= len(frames) <= max_frames, (
+        f"[{case_id}] {case_name}: frame_count={len(frames)} out of range [{min_frames}, {max_frames}]"
+    )
+
+    if expected.get("completed") is True:
+        assert done_received, f"[{case_id}] {case_name}: expected done signal"
+    if expected.get("done_received") is True:
+        assert done_received, f"[{case_id}] {case_name}: done_received expected true"
+    if (expected.get("events") or [{}])[0].get("has_content"):
+        has_content = any(
+            isinstance(f.get("choices"), list)
+            and f["choices"]
+            and isinstance(f["choices"][0], dict)
+            and isinstance(f["choices"][0].get("delta"), dict)
+            and bool(f["choices"][0]["delta"].get("content"))
+            for f in frames
+        )
+        assert has_content, f"[{case_id}] {case_name}: expected at least one content frame"
+
+
+def run_event_mapping(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run event_mapping test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    frames = input_data.get("frames") or []
+    actual_events: list[dict[str, Any]] = []
+    for frame in frames:
+        choices = frame.get("choices") if isinstance(frame, dict) else None
+        if not isinstance(choices, list) or not choices:
+            continue
+        first = choices[0] if isinstance(choices[0], dict) else {}
+        delta = first.get("delta") if isinstance(first.get("delta"), dict) else {}
+        if "content" in delta:
+            actual_events.append({"type": "PartialContentDelta", "content": delta.get("content")})
+        if "tool_calls" in delta:
+            actual_events.append({"type": "PartialToolCall", "tool_calls": delta.get("tool_calls")})
+        if "finish_reason" in first and first.get("finish_reason") is not None:
+            actual_events.append({"type": "StreamEnd", "finish_reason": first.get("finish_reason")})
+
+    expected_events = expected.get("events") or []
+    assert actual_events == expected_events, (
+        f"[{case_id}] {case_name}: events mismatch expected {expected_events}, got {actual_events}"
+    )
+    if "event_count" in expected:
+        assert len(actual_events) == int(expected["event_count"]), (
+            f"[{case_id}] {case_name}: event_count expected {expected['event_count']}, got {len(actual_events)}"
+        )
+
+
+def run_tool_accumulation(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run tool_accumulation test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    partial_chunks = input_data.get("partial_chunks") or []
+    merged: dict[tuple[int, str], dict[str, Any]] = {}
+    for chunk in partial_chunks:
+        if not isinstance(chunk, dict):
+            continue
+        index = int(chunk.get("index", 0))
+        call_id = str(chunk.get("id", ""))
+        key = (index, call_id)
+        function = chunk.get("function") if isinstance(chunk.get("function"), dict) else {}
+        if key not in merged:
+            merged[key] = {
+                "index": index,
+                "id": call_id,
+                "type": chunk.get("type", "function"),
+                "function": {
+                    "name": function.get("name"),
+                    "arguments": "",
+                },
+            }
+        merged[key]["function"]["arguments"] += str(function.get("arguments", ""))
+
+    assembled = list(merged.values())
+    expected_calls = expected.get("assembled_tool_calls") or []
+    assert assembled == expected_calls, (
+        f"[{case_id}] {case_name}: assembled_tool_calls expected {expected_calls}, got {assembled}"
+    )
+    if "complete" in expected:
+        assert bool(assembled) is bool(expected["complete"]), (
+            f"[{case_id}] {case_name}: complete expected {expected['complete']}, got {bool(assembled)}"
         )

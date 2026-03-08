@@ -54,3 +54,31 @@ def test_consume_latest_v2_generative_manifests() -> None:
         output = manifest.multimodal.output or {}
         video_out = output.get("video") or {}
         assert video_out.get("supported", False) is False
+
+
+def test_supports_structured_endpoint_and_streaming_shapes() -> None:
+    manifest = ManifestV2.model_validate(
+        {
+            "id": "shape-compat",
+            "protocol_version": "2.0",
+            "endpoint": {
+                "base_url": "https://example.com",
+                "chat": {"path": "/v2/chat", "method": "POST"},
+            },
+            "streaming": {
+                "decoder": {"format": "sse", "strategy": "openai_chat"},
+                "event_map": [{"match": "$.choices[0]", "emit": "PartialContentDelta"}],
+            },
+            "multimodal": {
+                "input": {"video": {"supported": True, "formats": ["mp4"]}},
+                "output": {"video": {"supported": False}},
+            },
+            "capabilities": {"required": ["text"], "optional": ["video"]},
+        }
+    )
+
+    assert manifest.base_url == "https://example.com"
+    assert manifest.chat_path == "/v2/chat"
+    assert manifest.streaming is not None
+    assert isinstance(manifest.streaming.decoder, dict)
+    assert isinstance(manifest.streaming.event_map, list)
