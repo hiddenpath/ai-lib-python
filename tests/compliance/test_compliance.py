@@ -95,6 +95,14 @@ def test_compliance(case: dict[str, Any]) -> None:
         run_event_mapping(input_data, expected, case)
     elif test_type == "tool_accumulation":
         run_tool_accumulation(input_data, expected, case)
+    elif test_type == "capability_guard":
+        run_capability_guard(input_data, expected, case)
+    elif test_type == "advanced_endpoint_mapping":
+        run_advanced_endpoint_mapping(input_data, expected, case)
+    elif test_type == "fallback_decision":
+        run_fallback_decision(input_data, expected, case)
+    elif test_type == "provider_mock_behavior":
+        run_provider_mock_behavior(input_data, expected, case)
     else:
         pytest.skip(f"Test type '{test_type}' not yet implemented")
 
@@ -428,4 +436,122 @@ def run_tool_accumulation(
     if "complete" in expected:
         assert bool(assembled) is bool(expected["complete"]), (
             f"[{case_id}] {case_name}: complete expected {expected['complete']}, got {bool(assembled)}"
+        )
+
+
+def run_capability_guard(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run capability_guard test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    method = str(input_data.get("method", ""))
+    manifest_raw = str(input_data.get("manifest", ""))
+    manifest = yaml.safe_load(manifest_raw) if manifest_raw else {}
+    cap_key = {
+        "MCPListTools": "mcp",
+        "ComputerUse": "computer_use",
+        "Reason": "reasoning",
+        "VideoGenerate": "video",
+    }.get(method, "")
+    caps = manifest.get("capabilities")
+    has_cap = False
+    if isinstance(caps, list):
+        has_cap = cap_key in caps
+    elif isinstance(caps, dict):
+        has_cap = cap_key in caps
+    actual_code = "" if has_cap else "E1005"
+    expected_code = str(expected.get("error_code", ""))
+    assert actual_code == expected_code, (
+        f"[{case_id}] {case_name}: error_code expected {expected_code}, got {actual_code}"
+    )
+
+
+def run_advanced_endpoint_mapping(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run advanced_endpoint_mapping test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    operation = str(input_data.get("operation", ""))
+    fallback = str(input_data.get("fallback", ""))
+    manifest_raw = str(input_data.get("manifest", ""))
+    manifest = yaml.safe_load(manifest_raw) if manifest_raw else {}
+    op = (
+        manifest.get("core", {})
+        .get("endpoint", {})
+        .get("endpoints", {})
+        .get(operation, {})
+    )
+    actual_path = str(op.get("path", fallback))
+    actual_method = str(op.get("method", "POST")).upper()
+    expected_path = str(expected.get("path", ""))
+    expected_method = str(expected.get("method", ""))
+    assert actual_path == expected_path, (
+        f"[{case_id}] {case_name}: path expected {expected_path}, got {actual_path}"
+    )
+    assert actual_method == expected_method, (
+        f"[{case_id}] {case_name}: method expected {expected_method}, got {actual_method}"
+    )
+
+
+def run_fallback_decision(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run fallback_decision test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    code = str(input_data.get("error_code", ""))
+    should_fallback = code in {"E1002", "E2001", "E2002", "E3001", "E3002", "E3003"}
+    expected_value = bool(expected.get("should_fallback", False))
+    assert should_fallback == expected_value, (
+        f"[{case_id}] {case_name}: should_fallback expected {expected_value}, got {should_fallback}"
+    )
+
+
+def _value_at_path(root: Any, path: str) -> Any:
+    cur = root
+    for part in path.split("."):
+        if isinstance(cur, dict):
+            if part not in cur:
+                return None
+            cur = cur[part]
+        elif isinstance(cur, list):
+            try:
+                idx = int(part)
+            except ValueError:
+                return None
+            if idx < 0 or idx >= len(cur):
+                return None
+            cur = cur[idx]
+        else:
+            return None
+    return cur
+
+
+def run_provider_mock_behavior(
+    input_data: dict[str, Any],
+    expected: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    """Run provider_mock_behavior test."""
+    case_id = case.get("id", "unknown")
+    case_name = case.get("name", "unnamed")
+    req = input_data.get("request_body") or {}
+    resp = input_data.get("response_body") or {}
+    for path, value in (expected.get("request_assert") or {}).items():
+        got = _value_at_path(req, str(path))
+        assert got == value, (
+            f"[{case_id}] {case_name}: request_assert {path} expected {value}, got {got}"
+        )
+    for path, value in (expected.get("response_assert") or {}).items():
+        got = _value_at_path(resp, str(path))
+        assert got == value, (
+            f"[{case_id}] {case_name}: response_assert {path} expected {value}, got {got}"
         )
