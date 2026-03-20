@@ -2,7 +2,7 @@ site_name: ai-lib-python Documentation
 site_description: Official Python Runtime for AI-Protocol
 site_url: https://hiddenpath.github.io/ai-lib-python/
 
-repo_url: https://github.com/hiddenpath/ai-lib-python
+repo_url: https://github.com/ailib-official/ai-lib-python
 repo_name: hiddenpath/ai-lib-python
 
 nav:

@@ -27,9 +27,9 @@ git ls-remote origin v0.5.0
 ```
 
 **GitHub仓库**:
-- Repository: https://github.com/hiddenpath/ai-lib-python
-- Commit查看: https://github.com/hiddenpath/ai-lib-python/commit/bea53fb
-- Tag查看: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.5.0
+- Repository: https://github.com/ailib-official/ai-lib-python
+- Commit查看: https://github.com/ailib-official/ai-lib-python/commit/bea53fb
+- Tag查看: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.5.0
 
 ### 2. 包构建 - ✅ 完成
 
@@ -94,7 +94,7 @@ python -c "import ai_lib_python; print(f'version: {ai_lib_python.__version__}')"
 ### 2. GitHub Release创建 - ⏳ 待手动完成（可选）
 
 **方式A**: 在GitHub网站手动创建
-1. 访问: https://github.com/hiddenpath/ai-lib-python/releases/new
+1. 访问: https://github.com/ailib-official/ai-lib-python/releases/new
 2. 选择 tag: v0.5.0
 3. 标题: "v0.5.0 - Beta Release with Guardrails"
 4. 描述: 使用 `RELEASE_NOTES_V0.5.0.md` 的内容
@@ -223,16 +223,16 @@ gh release create v0.5.0 \
 ## 📞 相关链接
 
 ### GitHub
-- 仓库: https://github.com/hiddenpath/ai-lib-python
-- Commit: https://github.com/hiddenpath/ai-lib-python/commit/bea53fb
-- Tag: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.5.0
+- 仓库: https://github.com/ailib-official/ai-lib-python
+- Commit: https://github.com/ailib-official/ai-lib-python/commit/bea53fb
+- Tag: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.5.0
 
 ### PyPI
 - 项目页: https://pypi.org/project/ai-lib-python/
 - PyPI Token: https://pypi.org/manage/account/token/
 
 ### 文档
-- GitHub文档: https://github.com/hiddenpath/ai-lib-python#readme
+- GitHub文档: https://github.com/ailib-official/ai-lib-python#readme
 
 ---
 

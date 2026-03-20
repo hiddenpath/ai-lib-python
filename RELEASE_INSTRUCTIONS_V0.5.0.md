@@ -31,7 +31,7 @@ git push origin v0.5.0
 ```bash
 # Create a token at: https://github.com/settings/tokens
 # Use the token with git:
-git remote set-url origin https://YOUR_TOKEN@github.com/hiddenpath/ai-lib-python.git
+git remote set-url origin https://YOUR_TOKEN@github.com/ailib-official/ai-lib-python.git
 git push origin main
 git push origin v0.5.0
 ```
@@ -48,7 +48,7 @@ git push origin v0.5.0
 
 ```bash
 gh release view v0.5.0  # If using GitHub CLI
-# Or visit: https://github.com/hiddenpath/ai-lib-python/releases
+# Or visit: https://github.com/ailib-official/ai-lib-python/releases
 ```
 
 ---
@@ -160,7 +160,7 @@ gh release create v0.5.0 \
 
 ### Option B: Manual on GitHub
 
-1. Visit: https://github.com/hiddenpath/ai-lib-python/releases/new
+1. Visit: https://github.com/ailib-official/ai-lib-python/releases/new
 2. Select tag: `v0.5.0`
 3. Title: `v0.5.0 - Beta Release with Guardrails`
 4. Description: Copy content from `RELEASE_NOTES_V0.5.0.md`

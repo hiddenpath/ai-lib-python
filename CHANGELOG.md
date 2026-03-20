@@ -607,13 +607,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mypy strict mode
 - ruff linting
 
-[Unreleased]: https://github.com/hiddenpath/ai-lib-python/compare/v0.8.1...HEAD
-[0.8.1]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.8.1
-[0.8.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.8.0
-[0.7.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.7.0
-[0.6.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.6.0
-[0.5.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.5.0
-[0.4.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.4.0
-[0.3.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.3.0
-[0.2.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.2.0
-[0.1.0]: https://github.com/hiddenpath/ai-lib-python/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ailib-official/ai-lib-python/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.8.1
+[0.8.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.8.0
+[0.7.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.7.0
+[0.6.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.6.0
+[0.5.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.5.0
+[0.4.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.4.0
+[0.3.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.3.0
+[0.2.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.2.0
+[0.1.0]: https://github.com/ailib-official/ai-lib-python/releases/tag/v0.1.0

@@ -273,7 +273,7 @@ Before release, verify:
 ## Release Assets
 
 ### Source Code
-- GitHub: https://github.com/hiddenpath/ai-lib-python
+- GitHub: https://github.com/ailib-official/ai-lib-python
 - Tag: `v0.5.0`
 
 ### Documentation
@@ -290,9 +290,9 @@ Before release, verify:
 
 ## Support
 
-- **Issues**: https://github.com/hiddenpath/ai-lib-python/issues
-- **Discussions**: https://github.com/hiddenpath/ai-lib-python/discussions
-- **Documentation**: https://github.com/hiddenpath/ai-lib-python#readme
+- **Issues**: https://github.com/ailib-official/ai-lib-python/issues
+- **Discussions**: https://github.com/ailib-official/ai-lib-python/discussions
+- **Documentation**: https://github.com/ailib-official/ai-lib-python#readme
 
 ---
 

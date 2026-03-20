@@ -30,7 +30,7 @@ _DEFAULT_SEARCH_PATHS = [
 ]
 
 # GitHub raw URL base for fallback loading
-_GITHUB_RAW_BASE = "https://raw.githubusercontent.com/hiddenpath/ai-protocol/main"
+_GITHUB_RAW_BASE = "https://raw.githubusercontent.com/ailib-official/ai-protocol/main"
 
 
 class ProtocolLoader:

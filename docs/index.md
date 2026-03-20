@@ -70,9 +70,9 @@ pip install ai-lib-python[dev]
 
 ## Resources
 
-- [GitHub Repository](https://github.com/hiddenpath/ai-lib-python)
-- [AI-Protocol Specification](https://github.com/hiddenpath/ai-protocol)
-- [Issue Tracker](https://github.com/hiddenpath/ai-lib-python/issues)
+- [GitHub Repository](https://github.com/ailib-official/ai-lib-python)
+- [AI-Protocol Specification](https://github.com/ailib-official/ai-protocol)
+- [Issue Tracker](https://github.com/ailib-official/ai-lib-python/issues)
 - [Examples](../examples/)
 
 ## License

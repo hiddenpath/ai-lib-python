@@ -27,7 +27,7 @@ This project adheres to a code of conduct. By participating, you are expected to
    ```
 3. **Add the upstream remote**:
    ```bash
-   git remote add upstream https://github.com/hiddenpath/ai-lib-python.git
+   git remote add upstream https://github.com/ailib-official/ai-lib-python.git
    ```
 
 ## Development Setup
@@ -297,7 +297,7 @@ Releases are managed by maintainers:
 ## Questions?
 
 If you have questions:
-- Open a [GitHub Discussion](https://github.com/hiddenpath/ai-lib-python/discussions)
+- Open a [GitHub Discussion](https://github.com/ailib-official/ai-lib-python/discussions)
 - Check existing issues for similar questions
 - Read the documentation in `/docs`
 

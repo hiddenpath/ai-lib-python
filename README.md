@@ -5,11 +5,11 @@
 [![PyPI Version](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
-[![Tests](https://github.com/hiddenpath/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/hiddenpath/ai-lib-python/actions)
+[![Tests](https://github.com/ailib-official/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ailib-official/ai-lib-python/actions)
 
 ## 🎯 Design Philosophy
 
-`ai-lib-python` is the official Python runtime implementation for the [AI-Protocol](https://github.com/hiddenpath/ai-protocol) specification. It embodies the core design principle:
+`ai-lib-python` is the official Python runtime implementation for the [AI-Protocol](https://github.com/ailib-official/ai-protocol) specification. It embodies the core design principle:
 
 > **一切逻辑皆算子，一切配置皆协议** (All logic is operators, all configuration is protocol)
 
@@ -104,11 +104,11 @@ pytest tests/compliance/ -v
 COMPLIANCE_DIR=../ai-protocol/tests/compliance pytest tests/compliance/ -v
 ```
 
-For details, see [CROSS_RUNTIME.md](https://github.com/hiddenpath/ai-protocol/blob/main/docs/CROSS_RUNTIME.md).
+For details, see [CROSS_RUNTIME.md](https://github.com/ailib-official/ai-protocol/blob/main/docs/CROSS_RUNTIME.md).
 
 ### Testing with ai-protocol-mock
 
-For integration and MCP e2e tests without real API calls, use [ai-protocol-mock](https://github.com/hiddenpath/ai-protocol-mock):
+For integration and MCP e2e tests without real API calls, use [ai-protocol-mock](https://github.com/ailib-official/ai-protocol-mock):
 
 ```bash
 # Start mock server (from ai-protocol-mock repo)
@@ -165,7 +165,7 @@ The library automatically looks for protocol manifests in the following location
 
 1. Custom path set via `AI_PROTOCOL_PATH` environment variable
 2. Common dev paths: `ai-protocol/`, `../ai-protocol/`, `../../ai-protocol/`
-3. Last resort: GitHub raw `hiddenpath/ai-protocol` (main)
+3. Last resort: GitHub raw `ailib-official/ai-protocol` (main)
 
 Provider manifests are resolved in a backward-compatible order:
 `dist/v1/providers/<id>.json` → `v1/providers/<id>.yaml`.
@@ -803,7 +803,7 @@ for answer in result.get_successful_results():
 
 ```bash
 # Clone the repository
-git clone https://github.com/hiddenpath/ai-lib-python.git
+git clone https://github.com/ailib-official/ai-lib-python.git
 cd ai-lib-python
 
 # Install development dependencies
@@ -915,8 +915,8 @@ ai-lib-python/
 
 ## 📖 Related Projects
 
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - Protocol specification (v1.5 / V2)
-- [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust) - Rust runtime implementation
+- [AI-Protocol](https://github.com/ailib-official/ai-protocol) - Protocol specification (v1.5 / V2)
+- [ai-lib-rust](https://github.com/ailib-official/ai-lib-rust) - Rust runtime implementation
 
 ## 🤝 Contributing
 
@@ -942,8 +942,8 @@ at your option.
 
 ## 🔗 Related Projects
 
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol): Protocol specification (v1.5 / V2)
-- [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust): Rust runtime implementation
+- [AI-Protocol](https://github.com/ailib-official/ai-protocol): Protocol specification (v1.5 / V2)
+- [ai-lib-rust](https://github.com/ailib-official/ai-lib-rust): Rust runtime implementation
 
 ---
 

@@ -154,14 +154,14 @@ python -c "import ai_lib_python; print(f'✅ v{ai_lib_python.__version__} upload
 
 3. **推荐使用CI发布**
    - v0.5.0标签已推送，应该触发CI
-   - 检查GitHub Actions：https://github.com/hiddenpath/ai-lib-python/actions
+   - 检查GitHub Actions：https://github.com/ailib-official/ai-lib-python/actions
 
 ### 下一步行动
 
 **推荐选项（按优先级）**:
 
 1. ✅ **等待CI自动完成**
-   - 检查 GitHub Actions: https://github.com/hiddenpath/ai-lib-python/actions
+   - 检查 GitHub Actions: https://github.com/ailib-official/ai-lib-python/actions
    - tag v0.5.0 已推送，应该自动触发
    - 等待CI完成几分钟
 
@@ -178,8 +178,8 @@ python -c "import ai_lib_python; print(f'✅ v{ai_lib_python.__version__} upload
 
 ## 🔗 相关链接
 
-- **GitHub Actions**: https://github.com/hiddenpath/ai-lib-python/actions
-- **CI配置文件**: https://github.com/hiddenpath/ai-lib-python/blob/main/.github/workflows/ci.yml
+- **GitHub Actions**: https://github.com/ailib-official/ai-lib-python/actions
+- **CI配置文件**: https://github.com/ailib-official/ai-lib-python/blob/main/.github/workflows/ci.yml
 - **PyPI项目页**: https://pypi.org/project/ai-lib-python/ (目前未上传)
 - **PyPI Trusted Publishing**: https://docs.pypi.org/trusted-publishers/
 

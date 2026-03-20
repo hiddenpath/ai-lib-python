@@ -5,11 +5,11 @@
 [![PyPI Version](https://img.shields.io/pypi/v/ai-lib-python.svg)](https://pypi.org/project/ai-lib-python/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green.svg)](LICENSE)
-[![Tests](https://github.com/hiddenpath/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/hiddenpath/ai-lib-python/actions)
+[![Tests](https://github.com/ailib-official/ai-lib-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ailib-official/ai-lib-python/actions)
 
 ## 🎯 设计理念
 
-`ai-lib-python` 是 [AI-Protocol](https://github.com/hiddenpath/ai-protocol) 规范的**官方 Python 运行时**。作为 AI-Protocol 团队维护的规范 Python 实现，它体现了核心设计原则：
+`ai-lib-python` 是 [AI-Protocol](https://github.com/ailib-official/ai-protocol) 规范的**官方 Python 运行时**。作为 AI-Protocol 团队维护的规范 Python 实现，它体现了核心设计原则：
 
 > **一切逻辑皆算子，一切配置皆协议** (All logic is operators, all configuration is protocol)
 
@@ -104,11 +104,11 @@ pytest tests/compliance/ -v
 COMPLIANCE_DIR=../ai-protocol/tests/compliance pytest tests/compliance/ -v
 ```
 
-详细信息请参阅 [CROSS_RUNTIME.md](https://github.com/hiddenpath/ai-protocol/blob/main/docs/CROSS_RUNTIME.md)。
+详细信息请参阅 [CROSS_RUNTIME.md](https://github.com/ailib-official/ai-protocol/blob/main/docs/CROSS_RUNTIME.md)。
 
 ### 使用 ai-protocol-mock 进行测试
 
-在无需真实 API 调用的集成和 MCP 端到端测试中，可使用 [ai-protocol-mock](https://github.com/hiddenpath/ai-protocol-mock)：
+在无需真实 API 调用的集成和 MCP 端到端测试中，可使用 [ai-protocol-mock](https://github.com/ailib-official/ai-protocol-mock)：
 
 ```bash
 # 启动 mock 服务（在 ai-protocol-mock 仓库中）
@@ -165,7 +165,7 @@ pip install ai-lib-python[dev]
 
 1. 通过 `AI_PROTOCOL_PATH` 环境变量设置的自定义路径
 2. 常见的开发路径：`ai-protocol/`、`../ai-protocol/`、`../../ai-protocol/`
-3. 最后手段：GitHub raw `hiddenpath/ai-protocol` (main)
+3. 最后手段：GitHub raw `ailib-official/ai-protocol` (main)
 
 提供商清单按向后兼容的顺序解析：
 `dist/v1/providers/<id>.json` → `v1/providers/<id>.yaml`。
@@ -785,7 +785,7 @@ loader = ProtocolLoader(hot_reload=True)
 
 ```bash
 # 克隆仓库
-git clone https://github.com/hiddenpath/ai-lib-python.git
+git clone https://github.com/ailib-official/ai-lib-python.git
 cd ai-lib-python
 
 # 安装开发依赖
@@ -897,8 +897,8 @@ ai-lib-python/
 
 ## 📖 相关项目
 
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol) - 协议规范（v1.5 / V2）
-- [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust) - Rust 运行时实现
+- [AI-Protocol](https://github.com/ailib-official/ai-protocol) - 协议规范（v1.5 / V2）
+- [ai-lib-rust](https://github.com/ailib-official/ai-lib-rust) - Rust 运行时实现
 
 ## 🤝 贡献
 
@@ -922,8 +922,8 @@ ai-lib-python/
 
 ## 🔗 相关项目
 
-- [AI-Protocol](https://github.com/hiddenpath/ai-protocol): 协议规范（v1.5 / V2）
-- [ai-lib-rust](https://github.com/hiddenpath/ai-lib-rust): Rust 运行时实现
+- [AI-Protocol](https://github.com/ailib-official/ai-protocol): 协议规范（v1.5 / V2）
+- [ai-lib-rust](https://github.com/ailib-official/ai-lib-rust): Rust 运行时实现
 
 ---
 
