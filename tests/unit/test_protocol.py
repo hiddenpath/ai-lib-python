@@ -157,7 +157,14 @@ class TestProtocolValidator:
             if manifest_path.exists():
                 return json.loads(manifest_path.read_text(encoding="utf-8"))
 
-        local_manifest = Path(__file__).resolve().parents[3] / "ai-protocol" / "dist" / "v1" / "providers" / "openai.json"
+        local_manifest = (
+            Path(__file__).resolve().parents[3]
+            / "ai-protocol"
+            / "dist"
+            / "v1"
+            / "providers"
+            / "openai.json"
+        )
         if local_manifest.exists():
             return json.loads(local_manifest.read_text(encoding="utf-8"))
 
@@ -221,20 +228,24 @@ class TestProtocolLoader:
     def test_register_provider(self) -> None:
         """Test registering a custom provider."""
         loader = ProtocolLoader()
-        manifest = loader.register_provider({
-            "id": "custom-provider",
-            "endpoint": {"base_url": "https://custom.api.com"},
-        })
+        manifest = loader.register_provider(
+            {
+                "id": "custom-provider",
+                "endpoint": {"base_url": "https://custom.api.com"},
+            }
+        )
         assert manifest.id == "custom-provider"
         assert "provider:custom-provider" in loader._cache
 
     def test_clear_cache(self) -> None:
         """Test clearing cache."""
         loader = ProtocolLoader()
-        loader.register_provider({
-            "id": "test",
-            "endpoint": {"base_url": "https://example.com"},
-        })
+        loader.register_provider(
+            {
+                "id": "test",
+                "endpoint": {"base_url": "https://example.com"},
+            }
+        )
         assert len(loader._cache) > 0
         loader.clear_cache()
         assert len(loader._cache) == 0
@@ -242,10 +253,12 @@ class TestProtocolLoader:
     def test_invalidate_specific_key(self) -> None:
         """Test invalidating specific cache key."""
         loader = ProtocolLoader()
-        loader.register_provider({
-            "id": "test",
-            "endpoint": {"base_url": "https://example.com"},
-        })
+        loader.register_provider(
+            {
+                "id": "test",
+                "endpoint": {"base_url": "https://example.com"},
+            }
+        )
         loader.invalidate("provider:test")
         assert "provider:test" not in loader._cache
 
@@ -258,20 +271,24 @@ class TestProtocolLoader:
         v1_path.parent.mkdir(parents=True, exist_ok=True)
 
         v2_path.write_text(
-            json.dumps({
-                "id": "openai",
-                "protocol_version": "2.0",
-                "endpoint": {"base_url": "https://v2.example.com"},
-                "capability_profile": {"phase": "ios_v1", "inputs": {"modalities": ["text"]}},
-            }),
+            json.dumps(
+                {
+                    "id": "openai",
+                    "protocol_version": "2.0",
+                    "endpoint": {"base_url": "https://v2.example.com"},
+                    "capability_profile": {"phase": "ios_v1", "inputs": {"modalities": ["text"]}},
+                }
+            ),
             encoding="utf-8",
         )
         v1_path.write_text(
-            json.dumps({
-                "id": "openai",
-                "protocol_version": "1.5",
-                "endpoint": {"base_url": "https://v1.example.com"},
-            }),
+            json.dumps(
+                {
+                    "id": "openai",
+                    "protocol_version": "1.5",
+                    "endpoint": {"base_url": "https://v1.example.com"},
+                }
+            ),
             encoding="utf-8",
         )
 
@@ -287,11 +304,13 @@ class TestProtocolLoader:
         v1_path = tmp_path / "dist" / "v1" / "providers" / "openai.json"
         v1_path.parent.mkdir(parents=True, exist_ok=True)
         v1_path.write_text(
-            json.dumps({
-                "id": "openai",
-                "protocol_version": "1.5",
-                "endpoint": {"base_url": "https://v1.example.com"},
-            }),
+            json.dumps(
+                {
+                    "id": "openai",
+                    "protocol_version": "1.5",
+                    "endpoint": {"base_url": "https://v1.example.com"},
+                }
+            ),
             encoding="utf-8",
         )
 

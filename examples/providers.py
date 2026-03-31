@@ -38,13 +38,7 @@ async def test_provider(model: str, env_var: str) -> tuple[str, str | None]:
     try:
         client = await AiClient.create(model)
         try:
-            response = await (
-                client.chat()
-                .user(PROMPT)
-                .max_tokens(100)
-                .temperature(0.7)
-                .execute()
-            )
+            response = await client.chat().user(PROMPT).max_tokens(100).temperature(0.7).execute()
             return model, response.content
         finally:
             await client.close()

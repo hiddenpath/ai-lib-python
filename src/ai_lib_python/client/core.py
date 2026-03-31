@@ -247,6 +247,7 @@ class AiClient:
                     m_key = self._api_keys.get(model)
 
                     from ai_lib_python.transport import HttpTransport
+
                     transport = HttpTransport(
                         manifest=manifest,
                         model_id=m_id,
@@ -299,9 +300,12 @@ class AiClient:
 
             except Exception as e:
                 from ai_lib_python.errors import is_fallbackable
+
                 # Check if we should fallback
                 error_class = getattr(e, "error_class", None)
-                if model != models_to_try[-1] and (error_class is None or is_fallbackable(error_class)):
+                if model != models_to_try[-1] and (
+                    error_class is None or is_fallbackable(error_class)
+                ):
                     last_error = e
                     continue
                 raise e
@@ -335,9 +339,7 @@ class AiClient:
             stats.record_end()
             raise
 
-    async def _execute_stream(
-        self, builder: ChatRequestBuilder
-    ) -> AsyncIterator[StreamingEvent]:
+    async def _execute_stream(self, builder: ChatRequestBuilder) -> AsyncIterator[StreamingEvent]:
         """Execute a streaming chat request.
 
         Args:
@@ -510,8 +512,6 @@ class AiClient:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(
-        self, exc_type: Any, exc_val: Any, exc_tb: Any
-    ) -> None:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.close()

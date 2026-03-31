@@ -1,6 +1,5 @@
 """Tests for ToolCallAssembler."""
 
-
 from ai_lib_python.utils import (
     MultiToolCallAssembler,
     ToolCallAssembler,

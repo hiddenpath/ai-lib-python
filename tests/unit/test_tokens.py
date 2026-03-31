@@ -1,6 +1,5 @@
 """Tests for token counting module."""
 
-
 from ai_lib_python.tokens import (
     CostEstimate,
     ModelPricing,

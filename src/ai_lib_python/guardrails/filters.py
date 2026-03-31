@@ -83,7 +83,9 @@ class KeywordFilter(Guardrail):
             else:
                 # Match whole words only
                 pattern = r"\b" + re.escape(keyword) + r"\b"
-                if re.search(pattern, text_to_check, re.IGNORECASE if not self._case_sensitive else 0):
+                if re.search(
+                    pattern, text_to_check, re.IGNORECASE if not self._case_sensitive else 0
+                ):
                     violations.append(
                         self._create_violation(
                             f"Found forbidden keyword: {keyword}",
@@ -305,7 +307,9 @@ class ProfanityFilter(Guardrail):
 
     _DEFAULT_PROFANITY_LIST = [
         # Common profanity words (can be extended)
-        "damn", "hell", "crap",
+        "damn",
+        "hell",
+        "crap",
         # Additional words can be added as needed
     ]
 

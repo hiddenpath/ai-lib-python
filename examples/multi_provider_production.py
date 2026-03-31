@@ -150,9 +150,15 @@ async def example_simple_fallback() -> None:
 
     # Example request
     try:
-        response = await client.chat().messages([
-            Message.user("Say hello in 5 words or less."),
-        ]).execute()
+        response = (
+            await client.chat()
+            .messages(
+                [
+                    Message.user("Say hello in 5 words or less."),
+                ]
+            )
+            .execute()
+        )
 
         print(f"Response: {response.content}")
         print(f"Model used: {response.model}")
@@ -197,9 +203,15 @@ async def example_cost_optimization() -> None:
 
     for prompt, client in requests:
         try:
-            response = await client.chat().messages([
-                Message.user(f"{prompt} - keep it brief."),
-            ]).execute()
+            response = (
+                await client.chat()
+                .messages(
+                    [
+                        Message.user(f"{prompt} - keep it brief."),
+                    ]
+                )
+                .execute()
+            )
 
             print(f"  Prompt: {prompt}")
             print(f"  Model: {response.model}")
@@ -216,15 +228,10 @@ async def example_weighted_selection() -> None:
     print("\n=== Example 3: Weighted Model Selection ===\n")
 
     # Create model selector with weights
-    models = [
-        create_model_info(model_id, config)
-        for model_id, config in MODELS.items()
-    ]
+    models = [create_model_info(model_id, config) for model_id, config in MODELS.items()]
 
     # Weight by speed (50%) and quality (50%)
-    selector = WeightedSelector(
-        weights={"speed": 0.5, "quality": 0.5}
-    )
+    selector = WeightedSelector(weights={"speed": 0.5, "quality": 0.5})
 
     # Select model for different use cases
     use_cases = [
@@ -251,10 +258,7 @@ async def example_performance_based() -> None:
     """Example 4: Performance-based routing."""
     print("\n=== Example 4: Performance-Based Routing ===\n")
 
-    models = [
-        create_model_info(model_id, config)
-        for model_id, config in MODELS.items()
-    ]
+    models = [create_model_info(model_id, config) for model_id, config in MODELS.items()]
 
     selector = PerformanceBasedSelector()
 
@@ -322,7 +326,7 @@ async def example_multi_region() -> None:
 
     print("Multi-tier configuration:")
     print("  Fast: claude-3-5-haiku -> gpt-4o-mini")
-    print("  Standard: gpt-4o-mini -> claude-3-5-haiku") 
+    print("  Standard: gpt-4o-mini -> claude-3-5-haiku")
     print("  Premium: gpt-4o -> claude-3-5-sonnet -> gpt-4o")
     print()
 
@@ -331,9 +335,15 @@ async def example_multi_region() -> None:
 
     for tier_name, client in tiers.items():
         try:
-            response = await client.chat().messages([
-                Message.user(prompt),
-            ]).execute()
+            response = (
+                await client.chat()
+                .messages(
+                    [
+                        Message.user(prompt),
+                    ]
+                )
+                .execute()
+            )
 
             print(f"{tier_name.capitalize()} tier:")
             print(f"  Model: {response.model}")
@@ -368,9 +378,15 @@ async def example_circuit_breaker() -> None:
 
     # Simulate a request
     try:
-        response = await client.chat().messages([
-            Message.user("Test message"),
-        ]).execute()
+        response = (
+            await client.chat()
+            .messages(
+                [
+                    Message.user("Test message"),
+                ]
+            )
+            .execute()
+        )
 
         print(f"Success: {response.content[:50]}...")
 

@@ -24,7 +24,14 @@ class AudioFormat(str, Enum):
 
     @classmethod
     def from_str(cls, s: str) -> AudioFormat:
-        m = {"mp3": cls.Mp3, "opus": cls.Opus, "aac": cls.Aac, "flac": cls.Flac, "wav": cls.Wav, "pcm": cls.Pcm}
+        m = {
+            "mp3": cls.Mp3,
+            "opus": cls.Opus,
+            "aac": cls.Aac,
+            "flac": cls.Flac,
+            "wav": cls.Wav,
+            "pcm": cls.Pcm,
+        }
         return m.get(s.lower(), cls.Mp3)
 
 
@@ -60,7 +67,9 @@ class TtsClient:
         self._model = model
         self._api_key = api_key
         self._base_url = base_url.rstrip("/")
-        self._endpoint_path = endpoint_path if endpoint_path.startswith("/") else f"/{endpoint_path}"
+        self._endpoint_path = (
+            endpoint_path if endpoint_path.startswith("/") else f"/{endpoint_path}"
+        )
         self._timeout = timeout
 
     @classmethod
@@ -103,9 +112,7 @@ class TtsClient:
         response.raise_for_status()
         data = response.content
         fmt = (
-            AudioFormat.from_str(opts.response_format)
-            if opts.response_format
-            else AudioFormat.Mp3
+            AudioFormat.from_str(opts.response_format) if opts.response_format else AudioFormat.Mp3
         )
         return AudioOutput(data=data, format=fmt)
 

@@ -154,13 +154,7 @@ async def main() -> None:
 
     try:
         # Create client with resilience
-        client = await (
-            AiClient.builder()
-            .model(MODEL)
-            .api_key(API_KEY)
-            .production_ready()
-            .build()
-        )
+        client = await AiClient.builder().model(MODEL).api_key(API_KEY).production_ready().build()
 
         # User input with potentially sensitive content
         user_message = "I need help with my account. My email is user@example.com"

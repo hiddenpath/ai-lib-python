@@ -194,9 +194,7 @@ class PreflightChecker:
                         result.errors = errors
                         return result
             except Exception as e:
-                errors.append(
-                    PreflightError(f"Rate limiter check failed: {e}", "rate_limiter")
-                )
+                errors.append(PreflightError(f"Rate limiter check failed: {e}", "rate_limiter"))
                 if self._config.fail_fast:
                     result.passed = False
                     result.errors = errors
@@ -230,9 +228,7 @@ class PreflightChecker:
                     result.errors = errors
                     return result
             except Exception as e:
-                errors.append(
-                    PreflightError(f"Backpressure check failed: {e}", "backpressure")
-                )
+                errors.append(PreflightError(f"Backpressure check failed: {e}", "backpressure"))
                 if self._config.fail_fast:
                     result.passed = False
                     result.errors = errors

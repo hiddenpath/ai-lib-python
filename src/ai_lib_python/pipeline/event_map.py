@@ -111,9 +111,7 @@ class ProtocolEventMapper(EventMapper):
                         yield event
                         break  # Only emit one event per frame
 
-    def _create_event(
-        self, frame: dict[str, Any], rule: dict[str, Any]
-    ) -> StreamingEvent | None:
+    def _create_event(self, frame: dict[str, Any], rule: dict[str, Any]) -> StreamingEvent | None:
         """Create an event from a frame using a rule.
 
         Args:
@@ -275,6 +273,88 @@ class DefaultEventMapper(EventMapper):
 
         return current
 
+    def map_frame(self, frame: dict[str, Any]) -> list[StreamingEvent]:
+        """Synchronously map a single frame to streaming events.
+
+        Args:
+            frame: Single JSON frame
+
+        Returns:
+            List of streaming events extracted from the frame
+        """
+        events: list[StreamingEvent] = []
+
+        if "error" in frame:
+            events.append(StreamingEvent.stream_error(error=frame["error"]))
+            return events
+
+        reasoning = self._get_nested(frame, "choices.0.delta.reasoning_content")
+        if reasoning:
+            events.append(StreamingEvent.thinking_delta(thinking=str(reasoning)))
+
+        content = self._get_nested(frame, self._content_path)
+        if content:
+            events.append(StreamingEvent.content_delta(content=str(content)))
+
+        tool_calls = self._get_nested(frame, self._tool_call_path)
+        if tool_calls and isinstance(tool_calls, list):
+            events.extend(self._process_tool_calls(tool_calls))
+
+        finish_reason = self._get_nested(frame, self._finish_reason_path)
+        if finish_reason:
+            events.append(StreamingEvent.metadata(finish_reason=str(finish_reason)))
+
+        usage = self._get_nested(frame, self._usage_path)
+        if usage:
+            events.append(StreamingEvent.metadata(usage=usage))
+
+        return events
+
+    def _process_tool_calls(self, tool_calls: list[dict[str, Any]]) -> list[StreamingEvent]:
+        events: list[StreamingEvent] = []
+        for tc in tool_calls:
+            index = tc.get("index", 0)
+            tc_id = tc.get("id")
+            func = tc.get("function", {})
+            name = func.get("name")
+            args = func.get("arguments", "")
+
+            if index not in self._tool_calls:
+                self._tool_calls[index] = {"id": tc_id, "name": name, "arguments": ""}
+            if tc_id:
+                self._tool_calls[index]["id"] = tc_id
+            if name:
+                self._tool_calls[index]["name"] = name
+
+            if name and not self._tool_calls[index].get("_started"):
+                self._tool_calls[index]["_started"] = True
+                events.append(
+                    StreamingEvent.tool_call_started(
+                        tool_call_id=self._tool_calls[index].get("id", ""),
+                        tool_name=name,
+                        index=index,
+                    )
+                )
+
+            if args:
+                self._tool_calls[index]["arguments"] += args
+                accumulated = self._tool_calls[index]["arguments"]
+                is_complete = False
+                try:
+                    json.loads(accumulated)
+                    is_complete = True
+                except json.JSONDecodeError:
+                    pass
+                events.append(
+                    StreamingEvent.partial_tool_call(
+                        tool_call_id=self._tool_calls[index].get("id", ""),
+                        arguments=args,
+                        index=index,
+                        is_complete=is_complete,
+                    )
+                )
+        return events
+
     async def map_events(
         self, frames: AsyncIterator[dict[str, Any]]
     ) -> AsyncIterator[StreamingEvent]:
@@ -291,6 +371,11 @@ class DefaultEventMapper(EventMapper):
             if "error" in frame:
                 yield StreamingEvent.stream_error(error=frame["error"])
                 continue
+
+            # Extract reasoning_content (OpenAI extended thinking)
+            reasoning = self._get_nested(frame, "choices.0.delta.reasoning_content")
+            if reasoning:
+                yield StreamingEvent.thinking_delta(thinking=str(reasoning))
 
             # Extract content delta
             content = self._get_nested(frame, self._content_path)

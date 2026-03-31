@@ -64,21 +64,15 @@ class TestCircuitBreakerSnapshot:
 
     def test_state_checks(self) -> None:
         """Test state checking properties."""
-        closed = CircuitBreakerSnapshot(
-            state="closed", failure_count=0, failure_threshold=5
-        )
+        closed = CircuitBreakerSnapshot(state="closed", failure_count=0, failure_threshold=5)
         assert closed.is_closed is True
         assert closed.is_open is False
         assert closed.is_half_open is False
 
-        open_state = CircuitBreakerSnapshot(
-            state="open", failure_count=5, failure_threshold=5
-        )
+        open_state = CircuitBreakerSnapshot(state="open", failure_count=5, failure_threshold=5)
         assert open_state.is_open is True
 
-        half_open = CircuitBreakerSnapshot(
-            state="half_open", failure_count=5, failure_threshold=5
-        )
+        half_open = CircuitBreakerSnapshot(state="half_open", failure_count=5, failure_threshold=5)
         assert half_open.is_half_open is True
 
 

@@ -196,8 +196,15 @@ def extract_provider_config(cu_config: dict[str, Any] | None) -> CuProviderConfi
 # ─── Helpers ────────────────────────────────────────────────────────────────
 
 _SENSITIVE_PATTERNS = (
-    ".ssh", ".gnupg", ".aws", "credentials", "secrets",
-    ".env", "password", "token", ".kube/config",
+    ".ssh",
+    ".gnupg",
+    ".aws",
+    "credentials",
+    "secrets",
+    ".env",
+    "password",
+    "token",
+    ".kube/config",
 )
 
 

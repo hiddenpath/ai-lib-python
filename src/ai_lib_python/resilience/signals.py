@@ -205,9 +205,7 @@ class SignalsSnapshot:
         return {
             "inflight": self.inflight.to_dict() if self.inflight else None,
             "rate_limiter": self.rate_limiter.to_dict() if self.rate_limiter else None,
-            "circuit_breaker": (
-                self.circuit_breaker.to_dict() if self.circuit_breaker else None
-            ),
+            "circuit_breaker": (self.circuit_breaker.to_dict() if self.circuit_breaker else None),
             "timestamp": self.timestamp,
             "provider": self.provider,
             "model": self.model,

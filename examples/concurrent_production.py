@@ -25,7 +25,9 @@ OPENAI_KEY = os.getenv("OPENAI_API_KEY", "sk-your-openai-key")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "sk-ant-your-anthropic-key")
 
 
-async def fetch_simple_response(client: AiClient, prompt: str, request_id: int) -> tuple[int, str, float]:
+async def fetch_simple_response(
+    client: AiClient, prompt: str, request_id: int
+) -> tuple[int, str, float]:
     """Fetch a simple response from the AI model.
 
     Args:
@@ -94,17 +96,12 @@ async def example_concurrent_requests() -> None:
     )
 
     # Define prompts for multiple requests
-    prompts = [
-        f"What is the capital of country {i}?" for i in range(10)
-    ]
+    prompts = [f"What is the capital of country {i}?" for i in range(10)]
 
     print(f"Processing {len(prompts)} requests concurrently (max_inflight=5)...\n")
 
     # Create tasks (they'll be limited by max_inflight internally)
-    tasks = [
-        fetch_simple_response(client, prompt, i)
-        for i, prompt in enumerate(prompts)
-    ]
+    tasks = [fetch_simple_response(client, prompt, i) for i, prompt in enumerate(prompts)]
 
     # Wait for all to complete
     start_time = time.perf_counter()
@@ -133,11 +130,7 @@ async def example_mixed_operations() -> None:
 
     # Create client
     client = await (
-        AiClient.builder()
-        .model("openai/gpt-4o-mini")
-        .api_key(OPENAI_KEY)
-        .max_inflight(3)
-        .build()
+        AiClient.builder().model("openai/gpt-4o-mini").api_key(OPENAI_KEY).max_inflight(3).build()
     )
 
     # Mix streaming and non-streaming tasks
@@ -157,7 +150,12 @@ async def example_mixed_operations() -> None:
 
     print(f"\nCompleted in {total_time:.0f}ms")
     for req_id, content, latency in results:
-        mode = "STREAM" if "Stream" in ["Stream this", "Stream another"][req_id % 5 < 2 or req_id == 1 or req_id == 3] else "CHUNK"
+        mode = (
+            "STREAM"
+            if "Stream"
+            in ["Stream this", "Stream another"][req_id % 5 < 2 or req_id == 1 or req_id == 3]
+            else "CHUNK"
+        )
         print(f"  [{req_id}] ({mode}, {latency:.0f}ms): {content[:60]}...")
 
 
@@ -184,13 +182,12 @@ async def example_batch_processing() -> None:
     total_start = time.perf_counter()
 
     for batch_num in range(0, len(all_prompts), batch_size):
-        batch = all_prompts[batch_num:batch_num + batch_size]
+        batch = all_prompts[batch_num : batch_num + batch_size]
         batch_start = time.perf_counter()
 
         # Process batch
         tasks = [
-            fetch_simple_response(client, prompt, batch_num + i)
-            for i, prompt in enumerate(batch)
+            fetch_simple_response(client, prompt, batch_num + i) for i, prompt in enumerate(batch)
         ]
 
         results = await asyncio.gather(*tasks)
@@ -211,11 +208,7 @@ async def example_multi_provider() -> None:
 
     # Create clients for different providers
     openai_client = await (
-        AiClient.builder()
-        .model("openai/gpt-4o-mini")
-        .api_key(OPENAI_KEY)
-        .max_inflight(2)
-        .build()
+        AiClient.builder().model("openai/gpt-4o-mini").api_key(OPENAI_KEY).max_inflight(2).build()
     )
 
     anthropic_client = await (

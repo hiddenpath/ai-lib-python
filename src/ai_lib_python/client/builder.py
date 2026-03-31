@@ -256,12 +256,14 @@ class AiClientBuilder:
 
         # Build resilient config
         resilient_config = self._resilient_config
-        if resilient_config is None and any([
-            self._retry_config,
-            self._rate_limit_config,
-            self._circuit_breaker_config,
-            self._max_inflight,
-        ]):
+        if resilient_config is None and any(
+            [
+                self._retry_config,
+                self._rate_limit_config,
+                self._circuit_breaker_config,
+                self._max_inflight,
+            ]
+        ):
             from ai_lib_python.resilience import BackpressureConfig, ResilientConfig
 
             resilient_config = ResilientConfig(
@@ -471,14 +473,14 @@ class ChatRequestBuilder:
         # Build messages
         messages_payload = []
         for msg in self._messages:
-            msg_dict: dict[str, Any] = {"role": msg.role.value if hasattr(msg.role, 'value') else msg.role}
+            msg_dict: dict[str, Any] = {
+                "role": msg.role.value if hasattr(msg.role, "value") else msg.role
+            }
             if isinstance(msg.content, str):
                 msg_dict["content"] = msg.content
             else:
                 # Content blocks
-                msg_dict["content"] = [
-                    block.model_dump(exclude_none=True) for block in msg.content
-                ]
+                msg_dict["content"] = [block.model_dump(exclude_none=True) for block in msg.content]
             messages_payload.append(msg_dict)
 
         payload: dict[str, Any] = {

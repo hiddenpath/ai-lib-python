@@ -61,9 +61,7 @@ class CacheBackend(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def set(
-        self, key: str, value: Any, ttl: float | None = None
-    ) -> None:
+    async def set(self, key: str, value: Any, ttl: float | None = None) -> None:
         """Set a value in the cache.
 
         Args:
@@ -146,9 +144,7 @@ class MemoryCache(CacheBackend):
             entry.hits += 1
             return entry.value
 
-    async def set(
-        self, key: str, value: Any, ttl: float | None = None
-    ) -> None:
+    async def set(self, key: str, value: Any, ttl: float | None = None) -> None:
         """Set a value in the cache."""
         async with self._lock:
             # Evict if at capacity
@@ -275,9 +271,7 @@ class DiskCache(CacheBackend):
             except (json.JSONDecodeError, KeyError, OSError):
                 return None
 
-    async def set(
-        self, key: str, value: Any, ttl: float | None = None
-    ) -> None:
+    async def set(self, key: str, value: Any, ttl: float | None = None) -> None:
         """Set a value in the cache."""
         path = self._key_to_path(key)
 
@@ -361,9 +355,7 @@ class NullCache(CacheBackend):
         """Always returns None."""
         return None
 
-    async def set(
-        self, key: str, value: Any, ttl: float | None = None
-    ) -> None:
+    async def set(self, key: str, value: Any, ttl: float | None = None) -> None:
         """Does nothing."""
         pass
 

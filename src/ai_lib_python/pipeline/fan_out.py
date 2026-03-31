@@ -51,9 +51,7 @@ class FanOutTransform(Transform):
         self._array_path = array_path
         self._preserve_metadata = preserve_metadata
 
-    async def transform(
-        self, input_stream: AsyncIterator[Any]
-    ) -> AsyncIterator[Any]:
+    async def transform(self, input_stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
         """Transform input stream by expanding arrays.
 
         Args:
@@ -179,9 +177,7 @@ class ReplicateTransform(Transform):
         self._count = max(1, count)
         self._add_index = add_index
 
-    async def transform(
-        self, input_stream: AsyncIterator[Any]
-    ) -> AsyncIterator[Any]:
+    async def transform(self, input_stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
         """Replicate each item in the stream.
 
         Args:
@@ -232,9 +228,7 @@ class SplitTransform(Transform):
         self._collect_filtered = collect_filtered
         self._filtered: list[Any] = []
 
-    async def transform(
-        self, input_stream: AsyncIterator[Any]
-    ) -> AsyncIterator[Any]:
+    async def transform(self, input_stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
         """Split stream based on predicate.
 
         Args:

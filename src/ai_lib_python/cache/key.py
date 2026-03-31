@@ -98,9 +98,7 @@ class CacheKeyGenerator:
         messages_hash = self._hash_messages(messages)
 
         # Hash parameters
-        filtered_params = {
-            k: v for k, v in params.items() if k not in self._excluded_params
-        }
+        filtered_params = {k: v for k, v in params.items() if k not in self._excluded_params}
         params_hash = self._hash_params(filtered_params)
 
         # Build key
@@ -171,10 +169,12 @@ class CacheKeyGenerator:
         # Normalize messages for hashing
         normalized = []
         for msg in messages:
-            normalized.append({
-                "role": msg.get("role", ""),
-                "content": self._normalize_content(msg.get("content", "")),
-            })
+            normalized.append(
+                {
+                    "role": msg.get("role", ""),
+                    "content": self._normalize_content(msg.get("content", "")),
+                }
+            )
 
         content = json.dumps(normalized, sort_keys=True, ensure_ascii=True)
         return self._hash_string(content)
@@ -199,10 +199,12 @@ class CacheKeyGenerator:
                         normalized.append({"type": "text", "text": block.get("text", "")})
                     elif block.get("type") == "image_url":
                         # Include image URL in hash
-                        normalized.append({
-                            "type": "image_url",
-                            "url": block.get("image_url", {}).get("url", ""),
-                        })
+                        normalized.append(
+                            {
+                                "type": "image_url",
+                                "url": block.get("image_url", {}).get("url", ""),
+                            }
+                        )
                     else:
                         normalized.append(block)
                 else:

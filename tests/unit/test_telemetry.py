@@ -183,12 +183,8 @@ class TestMetricsCollector:
         collector = MetricsCollector()
 
         # Record for different providers
-        collector.record_request(
-            MetricLabels(provider="openai"), latency=0.1, status="success"
-        )
-        collector.record_request(
-            MetricLabels(provider="anthropic"), latency=0.2, status="success"
-        )
+        collector.record_request(MetricLabels(provider="openai"), latency=0.1, status="success")
+        collector.record_request(MetricLabels(provider="anthropic"), latency=0.2, status="success")
 
         # Get filtered snapshot
         openai_snapshot = collector.get_snapshot(MetricLabels(provider="openai"))

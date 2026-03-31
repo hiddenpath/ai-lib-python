@@ -269,20 +269,22 @@ class ContentValidator:
             )
 
         if allowed_domains:
-            guardrails.extend([
-                UrlFilter(
-                    rule_id="custom-urls",
-                    action="allow",
-                    severity=severity,
-                    allowed_domains=allowed_domains,
-                ),
-                EmailFilter(
-                    rule_id="custom-emails",
-                    action="allow",
-                    severity=severity,
-                    allowed_domains=allowed_domains,
-                ),
-            ])
+            guardrails.extend(
+                [
+                    UrlFilter(
+                        rule_id="custom-urls",
+                        action="allow",
+                        severity=severity,
+                        allowed_domains=allowed_domains,
+                    ),
+                    EmailFilter(
+                        rule_id="custom-emails",
+                        action="allow",
+                        severity=severity,
+                        allowed_domains=allowed_domains,
+                    ),
+                ]
+            )
 
         if max_length:
             guardrails.append(
@@ -352,14 +354,22 @@ class SafetyValidator(ContentValidator):
 
     # Potentially harmful keywords
     _HARMFUL_KEYWORDS = [
-        "bomb", "drug", "weapon", "kill",
-        "illegal", "hack", "steal",
+        "bomb",
+        "drug",
+        "weapon",
+        "kill",
+        "illegal",
+        "hack",
+        "steal",
     ]
 
     # Self-harm indicators
     _SELF_HARM_KEYWORDS = [
-        "suicide", "end it all", "kill myself",
-        "want to die", "don't want to live",
+        "suicide",
+        "end it all",
+        "kill myself",
+        "want to die",
+        "don't want to live",
     ]
 
     def __init__(
@@ -462,14 +472,16 @@ class ComplianceValidator(ContentValidator):
         if hipaa_mode:
             # HIPAA: Additional protected health information patterns
             # (Additional patterns can be added based on requirements)
-            guardrails.extend([
-                RegexFilter(
-                    rule_id="hipaa-medical-record",
-                    pattern=r"\bMR[A-Z]?\d{6,}\b",
-                    severity=severity,
-                    replacement="[MRN REDACTED]",
-                    message="HIPAA violation: Medical record number detected",
-                ),
-            ])
+            guardrails.extend(
+                [
+                    RegexFilter(
+                        rule_id="hipaa-medical-record",
+                        pattern=r"\bMR[A-Z]?\d{6,}\b",
+                        severity=severity,
+                        replacement="[MRN REDACTED]",
+                        message="HIPAA violation: Medical record number detected",
+                    ),
+                ]
+            )
 
         super().__init__(guardrails)

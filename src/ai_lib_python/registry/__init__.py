@@ -122,14 +122,16 @@ class CapabilityRegistry:
         available: set[Capability] = set()
 
         # Core — always available
-        available.update({
-            Capability.TEXT,
-            Capability.STREAMING,
-            Capability.TOOLS,
-            Capability.PARALLEL_TOOLS,
-            Capability.AGENTIC,
-            Capability.STRUCTURED_OUTPUT,
-        })
+        available.update(
+            {
+                Capability.TEXT,
+                Capability.STREAMING,
+                Capability.TOOLS,
+                Capability.PARALLEL_TOOLS,
+                Capability.AGENTIC,
+                Capability.STRUCTURED_OUTPUT,
+            }
+        )
 
         # Vision (requires pillow)
         if _importable("PIL"):

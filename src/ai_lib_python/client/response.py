@@ -69,6 +69,44 @@ class ChatResponse:
             return self.usage.get("total_tokens")
         return None
 
+    @property
+    def reasoning_tokens(self) -> int | None:
+        """Get reasoning token count from usage (OpenAI completion_tokens_details)."""
+        if not self.usage:
+            return None
+        details = self.usage.get("completion_tokens_details")
+        if isinstance(details, dict):
+            return details.get("reasoning_tokens")
+        return None
+
+    @property
+    def input_tokens(self) -> int | None:
+        """Get input token count (Anthropic-style)."""
+        if self.usage:
+            return self.usage.get("input_tokens")
+        return None
+
+    @property
+    def output_tokens(self) -> int | None:
+        """Get output token count (Anthropic-style)."""
+        if self.usage:
+            return self.usage.get("output_tokens")
+        return None
+
+    @property
+    def cache_read_tokens(self) -> int | None:
+        """Get cache read tokens (Anthropic-style)."""
+        if self.usage:
+            return self.usage.get("cache_read_input_tokens")
+        return None
+
+    @property
+    def cache_creation_tokens(self) -> int | None:
+        """Get cache creation tokens (Anthropic-style)."""
+        if self.usage:
+            return self.usage.get("cache_creation_input_tokens")
+        return None
+
 
 @dataclass
 class CallStats:
@@ -108,9 +146,7 @@ class CallStats:
         """Record time of first token."""
         if self._first_token_time is None:
             self._first_token_time = time.time()
-            self.time_to_first_token_ms = (
-                self._first_token_time - self._start_time
-            ) * 1000
+            self.time_to_first_token_ms = (self._first_token_time - self._start_time) * 1000
 
     def record_end(self) -> None:
         """Record the end time and calculate latency."""

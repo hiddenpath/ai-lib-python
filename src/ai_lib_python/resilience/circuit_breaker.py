@@ -56,12 +56,8 @@ class CircuitBreakerConfig:
         """Create configuration from environment variables."""
         import os
 
-        failure_threshold = int(
-            os.getenv("AI_LIB_BREAKER_FAILURE_THRESHOLD", "5")
-        )
-        cooldown_seconds = float(
-            os.getenv("AI_LIB_BREAKER_COOLDOWN_SECS", "30")
-        )
+        failure_threshold = int(os.getenv("AI_LIB_BREAKER_FAILURE_THRESHOLD", "5"))
+        cooldown_seconds = float(os.getenv("AI_LIB_BREAKER_COOLDOWN_SECS", "30"))
 
         return cls(
             failure_threshold=failure_threshold,
@@ -124,9 +120,7 @@ class CircuitBreaker:
         self._opened_at: float | None = None
 
         # Half-open state management
-        self._half_open_semaphore = asyncio.Semaphore(
-            self._config.half_open_max_concurrent
-        )
+        self._half_open_semaphore = asyncio.Semaphore(self._config.half_open_max_concurrent)
 
         # Statistics
         self._stats = CircuitStats()
@@ -247,9 +241,7 @@ class CircuitBreaker:
                 self._stats.rejected_requests += 1
                 if fallback:
                     return await fallback()
-                raise CircuitOpenError(
-                    time_until_retry=self.get_time_until_retry()
-                )
+                raise CircuitOpenError(time_until_retry=self.get_time_until_retry())
 
         # Execute operation
         try:
@@ -270,9 +262,7 @@ class CircuitBreaker:
                 self._record_failure()
             raise
 
-    async def _execute_with_timeout(
-        self, operation: Callable[[], Awaitable[T]]
-    ) -> T:
+    async def _execute_with_timeout(self, operation: Callable[[], Awaitable[T]]) -> T:
         """Execute operation with optional timeout.
 
         Args:

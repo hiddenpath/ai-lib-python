@@ -113,8 +113,15 @@ plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = [
+    "jsonschema",
     "jsonpath_ng.*",
     "fastjsonschema.*",
+    "jsonschema.*",
+    "h2",
+    "h2.*",
+    "tiktoken",
+    "aiohttp",
+    "aiohttp.*",
 ]
 ignore_missing_imports = true
 

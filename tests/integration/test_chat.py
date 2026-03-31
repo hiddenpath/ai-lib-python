@@ -49,10 +49,7 @@ class TestBasicChat:
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
         response = await (
-            client.chat()
-            .system("You are a helpful assistant")
-            .user("Can you help me?")
-            .execute()
+            client.chat().system("You are a helpful assistant").user("Can you help me?").execute()
         )
 
         assert "help" in response.content.lower()
@@ -119,12 +116,7 @@ class TestBasicChat:
         setup_mock_openai_response(httpx_mock, content="Short response")
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
-        response = await (
-            client.chat()
-            .messages([Message.user("Test")])
-            .stop(["\n"])
-            .execute()
-        )
+        response = await client.chat().messages([Message.user("Test")]).stop(["\n"]).execute()
 
         assert response.content == "Short response"
 

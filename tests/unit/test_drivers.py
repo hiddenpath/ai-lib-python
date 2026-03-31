@@ -88,11 +88,13 @@ class TestAnthropicDriver:
         assert resp.finish_reason == "tool_calls"
 
     def test_parse_stream_delta(self) -> None:
-        data = json.dumps({
-            "type": "content_block_delta",
-            "index": 0,
-            "delta": {"type": "text_delta", "text": "Hi"},
-        })
+        data = json.dumps(
+            {
+                "type": "content_block_delta",
+                "index": 0,
+                "delta": {"type": "text_delta", "text": "Hi"},
+            }
+        )
         event = self.driver.parse_stream_event(data)
         assert event is not None
         assert event.is_content_delta
@@ -161,9 +163,9 @@ class TestGeminiDriver:
         assert resp.finish_reason == "content_filter"
 
     def test_parse_stream_delta(self) -> None:
-        data = json.dumps({
-            "candidates": [{"content": {"parts": [{"text": "World"}], "role": "model"}}]
-        })
+        data = json.dumps(
+            {"candidates": [{"content": {"parts": [{"text": "World"}], "role": "model"}}]}
+        )
         event = self.driver.parse_stream_event(data)
         assert event is not None
         assert event.is_content_delta

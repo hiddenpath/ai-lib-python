@@ -51,7 +51,11 @@ class BatchResult(Generic[R]):
 
     def get_successful_results(self) -> list[R]:
         """Get only successful results."""
-        return [r for r, e in zip(self.results, self.errors, strict=False) if e is None and r is not None]
+        return [
+            r
+            for r, e in zip(self.results, self.errors, strict=False)
+            if e is None and r is not None
+        ]
 
     def get_errors(self) -> list[tuple[int, Exception]]:
         """Get errors with their indices."""

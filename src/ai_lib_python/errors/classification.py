@@ -133,7 +133,9 @@ def classify_http_error(
     # Check for quota exhaustion hints in body (429 may be quota or rate limit)
     if status_code == 429 and body:
         error_msg = extract_error_message(body) or ""
-        error_type = body.get("error", {}).get("type", "") if isinstance(body.get("error"), dict) else ""
+        error_type = (
+            body.get("error", {}).get("type", "") if isinstance(body.get("error"), dict) else ""
+        )
 
         # Common patterns indicating quota exhaustion (avoid "limit exceeded" - too broad for rate_limit)
         quota_patterns = ["quota", "billing", "spend", "insufficient_quota", "plan"]

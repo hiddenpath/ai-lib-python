@@ -138,6 +138,7 @@ class TestRetryMechanism:
 
         # Build client with retry
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
             AiClientBuilder()
             .model("openai/gpt-4o")
@@ -163,6 +164,7 @@ class TestRetryMechanism:
             )
 
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
             AiClientBuilder()
             .model("openai/gpt-4o")
@@ -196,6 +198,7 @@ class TestFallbackMechanism:
         setup_mock_anthropic_response(httpx_mock, content="Response from fallback")
 
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
             AiClientBuilder()
             .model("openai/gpt-4o")
@@ -227,6 +230,7 @@ class TestFallbackMechanism:
         )
 
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
             AiClientBuilder()
             .model("openai/gpt-4o")
@@ -257,12 +261,9 @@ class TestCircuitBreaker:
             )
 
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
-            AiClientBuilder()
-            .model("openai/gpt-4o")
-            .api_key("sk-test")
-            .production_ready()
-            .build()
+            AiClientBuilder().model("openai/gpt-4o").api_key("sk-test").production_ready().build()
         )
 
         # Fail multiple times

@@ -17,10 +17,11 @@ class TestSSEDecoder:
     @pytest.mark.asyncio
     async def test_decode_simple_sse(self) -> None:
         """Test decoding simple SSE stream."""
+
         async def byte_stream():
             yield b'data: {"content": "Hello"}\n\n'
             yield b'data: {"content": "World"}\n\n'
-            yield b'data: [DONE]\n\n'
+            yield b"data: [DONE]\n\n"
 
         decoder = SSEDecoder()
         frames = []
@@ -34,10 +35,11 @@ class TestSSEDecoder:
     @pytest.mark.asyncio
     async def test_decode_chunked_sse(self) -> None:
         """Test decoding SSE with chunked data."""
+
         async def byte_stream():
             yield b'data: {"con'
             yield b'tent": "Hello"}\n\n'
-            yield b'data: [DONE]\n\n'
+            yield b"data: [DONE]\n\n"
 
         decoder = SSEDecoder()
         frames = []
@@ -50,10 +52,11 @@ class TestSSEDecoder:
     @pytest.mark.asyncio
     async def test_decode_with_comments(self) -> None:
         """Test SSE decoder ignores comments."""
+
         async def byte_stream():
-            yield b': this is a comment\n'
+            yield b": this is a comment\n"
             yield b'data: {"value": 1}\n\n'
-            yield b'data: [DONE]\n\n'
+            yield b"data: [DONE]\n\n"
 
         decoder = SSEDecoder()
         frames = []
@@ -66,9 +69,10 @@ class TestSSEDecoder:
     @pytest.mark.asyncio
     async def test_custom_done_signal(self) -> None:
         """Test SSE decoder with custom done signal."""
+
         async def byte_stream():
             yield b'data: {"value": 1}\n\n'
-            yield b'data: END\n\n'
+            yield b"data: END\n\n"
 
         decoder = SSEDecoder(done_signal="END")
         frames = []
@@ -84,6 +88,7 @@ class TestJsonLinesDecoder:
     @pytest.mark.asyncio
     async def test_decode_json_lines(self) -> None:
         """Test decoding JSON Lines stream."""
+
         async def byte_stream():
             yield b'{"id": 1}\n'
             yield b'{"id": 2}\n'
@@ -102,6 +107,7 @@ class TestJsonLinesDecoder:
     @pytest.mark.asyncio
     async def test_decode_chunked_json_lines(self) -> None:
         """Test decoding chunked JSON Lines."""
+
         async def byte_stream():
             yield b'{"id": '
             yield b'1}\n{"id": 2}\n'
@@ -168,6 +174,7 @@ class TestJsonPathSelector:
     @pytest.mark.asyncio
     async def test_transform_filters_frames(self) -> None:
         """Test selector as transform filters frames."""
+
         async def frames():
             yield {"type": "delta", "content": "a"}
             yield {"type": "other", "content": "b"}
@@ -189,6 +196,7 @@ class TestDefaultEventMapper:
     @pytest.mark.asyncio
     async def test_map_content_delta(self) -> None:
         """Test mapping content delta events."""
+
         async def frames():
             yield {"choices": [{"delta": {"content": "Hello"}}]}
             yield {"choices": [{"delta": {"content": " World"}}]}
@@ -206,37 +214,28 @@ class TestDefaultEventMapper:
     @pytest.mark.asyncio
     async def test_map_tool_calls(self) -> None:
         """Test mapping tool call events."""
+
         async def frames():
             yield {
-                "choices": [{
-                    "delta": {
-                        "tool_calls": [{
-                            "index": 0,
-                            "id": "call_123",
-                            "function": {"name": "get_weather"}
-                        }]
+                "choices": [
+                    {
+                        "delta": {
+                            "tool_calls": [
+                                {"index": 0, "id": "call_123", "function": {"name": "get_weather"}}
+                            ]
+                        }
                     }
-                }]
+                ]
             }
             yield {
-                "choices": [{
-                    "delta": {
-                        "tool_calls": [{
-                            "index": 0,
-                            "function": {"arguments": '{"city":'}
-                        }]
-                    }
-                }]
+                "choices": [
+                    {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": '{"city":'}}]}}
+                ]
             }
             yield {
-                "choices": [{
-                    "delta": {
-                        "tool_calls": [{
-                            "index": 0,
-                            "function": {"arguments": '"Tokyo"}'}
-                        }]
-                    }
-                }]
+                "choices": [
+                    {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": '"Tokyo"}'}}]}}
+                ]
             }
 
         mapper = DefaultEventMapper()
@@ -255,6 +254,7 @@ class TestDefaultEventMapper:
     @pytest.mark.asyncio
     async def test_map_error(self) -> None:
         """Test mapping error events."""
+
         async def frames():
             yield {"error": {"message": "Something went wrong"}}
 
@@ -273,10 +273,11 @@ class TestPipeline:
     @pytest.mark.asyncio
     async def test_full_pipeline(self) -> None:
         """Test full pipeline processing."""
+
         async def byte_stream():
             yield b'data: {"choices": [{"delta": {"content": "Hello"}}]}\n\n'
             yield b'data: {"choices": [{"delta": {"content": " World"}}]}\n\n'
-            yield b'data: [DONE]\n\n'
+            yield b"data: [DONE]\n\n"
 
         pipeline = Pipeline(
             decoder=SSEDecoder(),
@@ -296,10 +297,11 @@ class TestPipeline:
     @pytest.mark.asyncio
     async def test_pipeline_with_selector(self) -> None:
         """Test pipeline with frame selector."""
+
         async def byte_stream():
             yield b'data: {"type": "ping"}\n\n'
             yield b'data: {"choices": [{"delta": {"content": "Hi"}}]}\n\n'
-            yield b'data: [DONE]\n\n'
+            yield b"data: [DONE]\n\n"
 
         pipeline = Pipeline(
             decoder=SSEDecoder(),

@@ -116,9 +116,7 @@ class OutputValidator:
                 self._pydantic_model = schema
                 self._json_schema = schema.model_json_schema()
             else:
-                raise ValueError(
-                    "Schema must be a JSON schema dict or Pydantic model class"
-                )
+                raise ValueError("Schema must be a JSON schema dict or Pydantic model class")
 
     def validate(self, data: str | dict[str, Any]) -> ValidationResult:
         """Validate data against the schema.
@@ -248,9 +246,7 @@ class OutputValidator:
         properties = schema.get("properties", {})
         for prop_name, prop_schema in properties.items():
             if prop_name in data:
-                prop_errors = self._validate_property(
-                    data[prop_name], prop_schema, prop_name
-                )
+                prop_errors = self._validate_property(data[prop_name], prop_schema, prop_name)
                 errors.extend(prop_errors)
 
         # Check additional properties
@@ -336,9 +332,7 @@ class OutputValidator:
                 errors.append(f"{path}: Array too long (max {schema['maxItems']})")
             if "items" in schema:
                 for i, item in enumerate(value):
-                    item_errors = self._validate_property(
-                        item, schema["items"], f"{path}[{i}]"
-                    )
+                    item_errors = self._validate_property(item, schema["items"], f"{path}[{i}]")
                     errors.extend(item_errors)
 
         return errors

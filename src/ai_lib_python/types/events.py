@@ -26,9 +26,7 @@ class ThinkingDelta(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     thinking: str = Field(description="Thinking/reasoning text")
-    tool_consideration: str | None = Field(
-        default=None, description="Tool consideration notes"
-    )
+    tool_consideration: str | None = Field(default=None, description="Tool consideration notes")
 
 
 class ToolCallStarted(BaseModel):
@@ -49,9 +47,7 @@ class PartialToolCall(BaseModel):
     tool_call_id: str = Field(description="Tool call identifier")
     arguments: str = Field(description="Partial JSON arguments string")
     index: int | None = Field(default=None, description="Tool call index")
-    is_complete: bool | None = Field(
-        default=None, description="Whether arguments are complete"
-    )
+    is_complete: bool | None = Field(default=None, description="Whether arguments are complete")
 
 
 class ToolCallEnded(BaseModel):
@@ -145,9 +141,7 @@ class StreamingEvent(BaseModel):
         )
 
     @classmethod
-    def thinking_delta(
-        cls, thinking: str, tool_consideration: str | None = None
-    ) -> StreamingEvent:
+    def thinking_delta(cls, thinking: str, tool_consideration: str | None = None) -> StreamingEvent:
         """Create a thinking delta event."""
         return cls(
             event_type="ThinkingDelta",
@@ -161,9 +155,7 @@ class StreamingEvent(BaseModel):
         """Create a tool call started event."""
         return cls(
             event_type="ToolCallStarted",
-            data=ToolCallStarted(
-                tool_call_id=tool_call_id, tool_name=tool_name, index=index
-            ),
+            data=ToolCallStarted(tool_call_id=tool_call_id, tool_name=tool_name, index=index),
         )
 
     @classmethod
@@ -186,9 +178,7 @@ class StreamingEvent(BaseModel):
         )
 
     @classmethod
-    def tool_call_ended(
-        cls, tool_call_id: str, index: int | None = None
-    ) -> StreamingEvent:
+    def tool_call_ended(cls, tool_call_id: str, index: int | None = None) -> StreamingEvent:
         """Create a tool call ended event."""
         return cls(
             event_type="ToolCallEnded",

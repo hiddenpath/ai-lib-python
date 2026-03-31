@@ -24,9 +24,7 @@ class Decoder(ABC):
     """
 
     @abstractmethod
-    def decode(
-        self, byte_stream: AsyncIterator[bytes]
-    ) -> AsyncIterator[dict[str, Any]]:
+    def decode(self, byte_stream: AsyncIterator[bytes]) -> AsyncIterator[dict[str, Any]]:
         """Decode a byte stream into JSON frames.
 
         Args:
@@ -46,9 +44,7 @@ class Transform(ABC):
     """
 
     @abstractmethod
-    def transform(
-        self, frames: AsyncIterator[dict[str, Any]]
-    ) -> AsyncIterator[dict[str, Any]]:
+    def transform(self, frames: AsyncIterator[dict[str, Any]]) -> AsyncIterator[dict[str, Any]]:
         """Transform a stream of frames.
 
         Args:
@@ -68,9 +64,7 @@ class EventMapper(ABC):
     """
 
     @abstractmethod
-    def map_events(
-        self, frames: AsyncIterator[dict[str, Any]]
-    ) -> AsyncIterator[StreamingEvent]:
+    def map_events(self, frames: AsyncIterator[dict[str, Any]]) -> AsyncIterator[StreamingEvent]:
         """Map frames to streaming events.
 
         Args:
@@ -113,9 +107,7 @@ class Pipeline:
         self._transforms = transforms or []
         self._event_mapper = event_mapper
 
-    async def process(
-        self, byte_stream: AsyncIterator[bytes]
-    ) -> AsyncIterator[StreamingEvent]:
+    async def process(self, byte_stream: AsyncIterator[bytes]) -> AsyncIterator[StreamingEvent]:
         """Process a byte stream through the complete pipeline.
 
         Args:
@@ -142,9 +134,7 @@ class Pipeline:
             async for frame in frames:
                 yield StreamingEvent.content_delta(str(frame))
 
-    async def decode_only(
-        self, byte_stream: AsyncIterator[bytes]
-    ) -> AsyncIterator[dict[str, Any]]:
+    async def decode_only(self, byte_stream: AsyncIterator[bytes]) -> AsyncIterator[dict[str, Any]]:
         """Process only through decoder and transforms, without event mapping.
 
         Useful for debugging or when custom event handling is needed.
