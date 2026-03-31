@@ -127,8 +127,7 @@ class SensitiveDataMasker:
             patterns: List of (pattern, replacement) tuples
         """
         self._patterns = [
-            (re.compile(p, re.IGNORECASE), r)
-            for p, r in (patterns or self.DEFAULT_PATTERNS)
+            (re.compile(p, re.IGNORECASE), r) for p, r in (patterns or self.DEFAULT_PATTERNS)
         ]
 
     def mask(self, text: str) -> str:
@@ -167,9 +166,7 @@ class SensitiveDataMasker:
             elif isinstance(value, dict):
                 result[key] = self.mask_dict(value)
             elif isinstance(value, list):
-                result[key] = [
-                    self.mask_dict(v) if isinstance(v, dict) else v for v in value
-                ]
+                result[key] = [self.mask_dict(v) if isinstance(v, dict) else v for v in value]
             else:
                 result[key] = value
         return result
@@ -202,9 +199,10 @@ class JsonFormatter(logging.Formatter):
         }
 
         if self._include_timestamp:
-            log_data["timestamp"] = time.strftime(
-                "%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)
-            ) + f".{int(record.msecs):03d}Z"
+            log_data["timestamp"] = (
+                time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created))
+                + f".{int(record.msecs):03d}Z"
+            )
 
         # Add context
         context = get_log_context()
@@ -346,9 +344,7 @@ class AiLibLogger:
         """Initialize with underlying logger."""
         self._logger = logger
 
-    def _log(
-        self, level: int, msg: str, exc_info: bool = False, **kwargs: Any
-    ) -> None:
+    def _log(self, level: int, msg: str, exc_info: bool = False, **kwargs: Any) -> None:
         """Internal log method."""
         # Create record with extra fields
         extra = {"extra_fields": kwargs} if kwargs else {}

@@ -42,7 +42,12 @@ class TestFullChainOpenAI:
             name="OpenAI",
             endpoints=EndpointV2(base_url="https://api.openai.com/v1", chat="/chat/completions"),
             capabilities=CapabilitiesV2(
-                required=[Capability.TEXT, Capability.STREAMING, Capability.TOOLS, Capability.MCP_CLIENT],
+                required=[
+                    Capability.TEXT,
+                    Capability.STREAMING,
+                    Capability.TOOLS,
+                    Capability.MCP_CLIENT,
+                ],
                 optional=[Capability.VISION, Capability.COMPUTER_USE],
             ),
         )
@@ -51,7 +56,9 @@ class TestFullChainOpenAI:
         assert manifest.detect_api_style() == ApiStyle.OPENAI_COMPATIBLE
 
         # Driver creation
-        driver = create_driver(manifest.detect_api_style(), "openai", manifest.capabilities.required)
+        driver = create_driver(
+            manifest.detect_api_style(), "openai", manifest.capabilities.required
+        )
         assert Capability.MCP_CLIENT in driver.supported_capabilities()
 
         # Registry — check that core capabilities are active
@@ -62,9 +69,11 @@ class TestFullChainOpenAI:
 
         # MCP bridge
         bridge = McpToolBridge("filesystem")
-        tools = bridge.mcp_tools_to_protocol([
-            McpTool(name="read_file", description="Read file", input_schema={"type": "object"}),
-        ])
+        tools = bridge.mcp_tools_to_protocol(
+            [
+                McpTool(name="read_file", description="Read file", input_schema={"type": "object"}),
+            ]
+        )
         assert tools[0]["function"]["name"] == "mcp__filesystem__read_file"
 
         # Round-trip
@@ -152,7 +161,11 @@ class TestFullChainGemini:
         # Multimodal: video support
         mm_config = {
             "input": {
-                "vision": {"supported": True, "formats": ["jpeg", "png"], "encoding_methods": ["url"]},
+                "vision": {
+                    "supported": True,
+                    "formats": ["jpeg", "png"],
+                    "encoding_methods": ["url"],
+                },
                 "video": {"supported": True, "formats": ["mp4", "mov"]},
             },
             "output": {"text": True},
@@ -165,9 +178,11 @@ class TestFullChainGemini:
 class TestMcpBridgeRoundtrip:
     def test_roundtrip(self) -> None:
         bridge = McpToolBridge("testserver")
-        tools = bridge.mcp_tools_to_protocol([
-            McpTool(name="calculate", description="Math", input_schema={"type": "object"}),
-        ])
+        tools = bridge.mcp_tools_to_protocol(
+            [
+                McpTool(name="calculate", description="Math", input_schema={"type": "object"}),
+            ]
+        )
         assert "mcp__testserver__calculate" in tools[0]["function"]["name"]
 
         call = {"name": "mcp__testserver__calculate", "arguments": {"expr": "2+2"}}
@@ -201,12 +216,14 @@ class TestCuSafetyEnforcement:
 
 class TestMultimodalValidation:
     def test_reject_unsupported(self) -> None:
-        caps = MultimodalCapabilities.from_config({
-            "input": {
-                "vision": {"supported": True, "formats": ["jpeg"], "encoding_methods": ["url"]},
-            },
-            "output": {"text": True},
-        })
+        caps = MultimodalCapabilities.from_config(
+            {
+                "input": {
+                    "vision": {"supported": True, "formats": ["jpeg"], "encoding_methods": ["url"]},
+                },
+                "output": {"text": True},
+            }
+        )
         valid = [{"type": "text", "text": "Hello"}, {"type": "image", "source": {}}]
         assert validate_content_modalities(valid, caps) == []
 

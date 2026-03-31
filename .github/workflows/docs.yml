@@ -25,10 +25,7 @@ jobs:
 
       - name: Build docs
         run: |
-          cd docs
-          # mkdocs build (if using mkdocs)
-          # or sphinx-build (if using sphinx)
-          echo "Documentation build placeholder"
+          mkdocs build --strict
 
       # - name: Deploy to GitHub Pages
       #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -90,11 +90,7 @@ class McpToolBridge:
 
         Applies allow/deny filtering and namespaces tool names.
         """
-        return [
-            self._convert_tool(t)
-            for t in mcp_tools
-            if self._is_allowed(t.name)
-        ]
+        return [self._convert_tool(t) for t in mcp_tools if self._is_allowed(t.name)]
 
     def protocol_call_to_mcp(
         self,
@@ -148,7 +144,7 @@ class McpToolBridge:
 
     def _strip_namespace(self, namespaced: str) -> str | None:
         if namespaced.startswith(self._namespace):
-            return namespaced[len(self._namespace):]
+            return namespaced[len(self._namespace) :]
         return None
 
 
@@ -157,7 +153,13 @@ def extract_provider_config(mcp_config: dict[str, Any] | None) -> McpProviderCon
     if not mcp_config:
         return None
 
-    client = mcp_config if isinstance(mcp_config, dict) and "supported" in mcp_config else mcp_config.get("client", {}) if isinstance(mcp_config, dict) else {}
+    client = (
+        mcp_config
+        if isinstance(mcp_config, dict) and "supported" in mcp_config
+        else mcp_config.get("client", {})
+        if isinstance(mcp_config, dict)
+        else {}
+    )
     if not client.get("supported"):
         return None
 

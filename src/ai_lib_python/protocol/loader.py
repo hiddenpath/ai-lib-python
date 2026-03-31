@@ -175,9 +175,7 @@ class ProtocolLoader:
                 )
 
             content = response.text
-            parsed: Any = (
-                json.loads(content) if path.endswith(".json") else yaml.safe_load(content)
-            )
+            parsed: Any = json.loads(content) if path.endswith(".json") else yaml.safe_load(content)
             if isinstance(parsed, dict):
                 return parsed
             raise ProtocolError(
@@ -195,9 +193,7 @@ class ProtocolLoader:
             Parsed content
         """
         content = path.read_text(encoding="utf-8")
-        parsed: Any = (
-            json.loads(content) if path.suffix == ".json" else yaml.safe_load(content)
-        )
+        parsed: Any = json.loads(content) if path.suffix == ".json" else yaml.safe_load(content)
         if isinstance(parsed, dict):
             return parsed
         raise ProtocolError(
@@ -241,14 +237,10 @@ class ProtocolLoader:
         # Fallback to GitHub
         if self._fallback_to_github:
             try:
-                data = await self._load_from_github(
-                    f"dist/v2/providers/{provider_id}.json"
-                )
+                data = await self._load_from_github(f"dist/v2/providers/{provider_id}.json")
             except Exception:
                 try:
-                    data = await self._load_from_github(
-                        f"dist/v1/providers/{provider_id}.json"
-                    )
+                    data = await self._load_from_github(f"dist/v1/providers/{provider_id}.json")
                 except Exception as e:
                     raise ProtocolError(
                         f"Provider '{provider_id}' not found locally or on GitHub: {e}",

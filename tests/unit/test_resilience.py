@@ -174,6 +174,7 @@ class TestRetryPolicy:
     @pytest.mark.asyncio
     async def test_with_retry_function(self) -> None:
         """Test with_retry helper function."""
+
         async def success_op() -> str:
             return "success"
 
@@ -543,9 +544,7 @@ class TestResilientExecutor:
     @pytest.mark.asyncio
     async def test_execute_with_retry(self) -> None:
         """Test execution with retry."""
-        config = ResilientConfig(
-            retry=RetryConfig(max_retries=2, min_delay_ms=10)
-        )
+        config = ResilientConfig(retry=RetryConfig(max_retries=2, min_delay_ms=10))
         executor = ResilientExecutor(config)
 
         attempts = [0]

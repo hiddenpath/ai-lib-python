@@ -55,17 +55,21 @@ class TestProtocolLoading:
         httpx_mock.add_response(
             url=custom_url,
             method="POST",
-            json=[{
-                "id": "chatcmpl-123",
-                "object": "chat.completion",
-                "created": 1699012345,
-                "model": "gpt-4o",
-                "choices": [{
-                    "index": 0,
-                    "message": {"role": "assistant", "content": "Custom URL response"},
-                    "finish_reason": "stop",
-                }],
-            }],
+            json=[
+                {
+                    "id": "chatcmpl-123",
+                    "object": "chat.completion",
+                    "created": 1699012345,
+                    "model": "gpt-4o",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {"role": "assistant", "content": "Custom URL response"},
+                            "finish_reason": "stop",
+                        }
+                    ],
+                }
+            ],
         )
 
         client = await AiClient.create(
@@ -114,6 +118,7 @@ class TestBuilderConfiguration:
         setup_mock_openai_response(httpx_mock, content="Full config")
 
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
             AiClientBuilder()
             .model("openai/gpt-4o")
@@ -145,6 +150,7 @@ class TestBuilderConfiguration:
         setup_mock_anthropic_response(httpx_mock, content="Anthropic")
 
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
             AiClientBuilder()
             .model("openai/gpt-4o")
@@ -218,12 +224,7 @@ class TestProtocolCompatibility:
         )
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
-        response = await (
-            client.chat()
-            .messages([Message.user("Use tool")])
-            .tools([tool])
-            .execute()
-        )
+        response = await client.chat().messages([Message.user("Use tool")]).tools([tool]).execute()
 
         assert response.has_tool_calls
 
@@ -235,11 +236,6 @@ class TestProtocolCompatibility:
         setup_mock_openai_response(httpx_mock, content="System message received")
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
-        response = await (
-            client.chat()
-            .system("You are a helpful assistant")
-            .user("Hello")
-            .execute()
-        )
+        response = await client.chat().system("You are a helpful assistant").user("Hello").execute()
 
         assert response.content == "System message received"

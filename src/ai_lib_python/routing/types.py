@@ -309,9 +309,7 @@ class ModelInfo:
             description=data.get("description", ""),
             provider=data.get("provider", ""),
             capabilities=ModelCapabilities.from_dict(data.get("capabilities", {})),
-            pricing=(
-                PricingInfo.from_dict(data["pricing"]) if data.get("pricing") else None
-            ),
+            pricing=(PricingInfo.from_dict(data["pricing"]) if data.get("pricing") else None),
             performance=PerformanceMetrics.from_dict(data.get("performance", {})),
             metadata=data.get("metadata", {}),
         )

@@ -5,6 +5,7 @@ Runtime feature detection for optional extras.
 Checks availability of optional dependencies to determine which
 capability modules can be used.
 """
+
 from __future__ import annotations
 
 

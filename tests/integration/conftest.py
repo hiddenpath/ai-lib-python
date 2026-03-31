@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-
     import pytest_httpx
 
 
@@ -48,7 +47,25 @@ def mock_openai_streaming_chunks(content: str, model: str = "gpt-4o") -> list[di
     """Create mock OpenAI streaming chunks."""
     chunks = []
     for _i, char in enumerate(content):
-        chunks.append({
+        chunks.append(
+            {
+                "id": "chatcmpl-123",
+                "object": "chat.completion.chunk",
+                "created": 1699012345,
+                "model": model,
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {"content": char},
+                        "finish_reason": None,
+                    }
+                ],
+            }
+        )
+
+    # Final chunk with finish_reason
+    chunks.append(
+        {
             "id": "chatcmpl-123",
             "object": "chat.completion.chunk",
             "created": 1699012345,
@@ -56,26 +73,12 @@ def mock_openai_streaming_chunks(content: str, model: str = "gpt-4o") -> list[di
             "choices": [
                 {
                     "index": 0,
-                    "delta": {"content": char},
-                    "finish_reason": None,
+                    "delta": {},
+                    "finish_reason": "stop",
                 }
             ],
-        })
-
-    # Final chunk with finish_reason
-    chunks.append({
-        "id": "chatcmpl-123",
-        "object": "chat.completion.chunk",
-        "created": 1699012345,
-        "model": model,
-        "choices": [
-            {
-                "index": 0,
-                "delta": {},
-                "finish_reason": "stop",
-            }
-        ],
-    })
+        }
+    )
 
     return chunks
 
@@ -103,50 +106,62 @@ def mock_anthropic_chat_response(
     return response
 
 
-def mock_anthropic_streaming_chunks(content: str, model: str = "claude-3-5-sonnet-20241022") -> list[dict]:
+def mock_anthropic_streaming_chunks(
+    content: str, model: str = "claude-3-5-sonnet-20241022"
+) -> list[dict]:
     """Create mock Anthropic streaming chunks."""
     chunks = []
 
     # Start message
-    chunks.append({
-        "type": "message_start",
-        "message": {
-            "id": "msg_123",
-            "type": "message",
-            "role": "assistant",
-            "content": [],
-            "model": model,
-            "stop_reason": None,
-            "stop_sequence": None,
-            "usage": {"input_tokens": 10, "output_tokens": 0},
-        },
-    })
+    chunks.append(
+        {
+            "type": "message_start",
+            "message": {
+                "id": "msg_123",
+                "type": "message",
+                "role": "assistant",
+                "content": [],
+                "model": model,
+                "stop_reason": None,
+                "stop_sequence": None,
+                "usage": {"input_tokens": 10, "output_tokens": 0},
+            },
+        }
+    )
 
     # Content block start
-    chunks.append({
-        "type": "content_block_start",
-        "index": 0,
-        "content_block": {"type": "text", "text": ""},
-    })
+    chunks.append(
+        {
+            "type": "content_block_start",
+            "index": 0,
+            "content_block": {"type": "text", "text": ""},
+        }
+    )
 
     # Delta chunks
     for _i, char in enumerate(content):
-        chunks.append({
-            "type": "content_block_delta",
-            "index": 0,
-            "delta": {"type": "text_delta", "text": char},
-        })
+        chunks.append(
+            {
+                "type": "content_block_delta",
+                "index": 0,
+                "delta": {"type": "text_delta", "text": char},
+            }
+        )
 
     # Content block stop
-    chunks.append({
-        "type": "content_block_stop",
-        "index": 0,
-    })
+    chunks.append(
+        {
+            "type": "content_block_stop",
+            "index": 0,
+        }
+    )
 
     # Message stop
-    chunks.append({
-        "type": "message_stop",
-    })
+    chunks.append(
+        {
+            "type": "message_stop",
+        }
+    )
 
     return chunks
 

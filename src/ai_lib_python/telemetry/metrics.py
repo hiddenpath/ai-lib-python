@@ -58,9 +58,7 @@ class HistogramBuckets:
     """Histogram bucket configuration."""
 
     boundaries: list[float] = field(
-        default_factory=lambda: [
-            0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0
-        ]
+        default_factory=lambda: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
     )
 
     def get_bucket(self, value: float) -> str:
@@ -178,9 +176,7 @@ class MetricsCollector:
         self._rate_limit_wait: dict[str, float] = defaultdict(float)
 
         # Histogram buckets
-        self._latency_buckets: dict[str, dict[str, int]] = defaultdict(
-            lambda: defaultdict(int)
-        )
+        self._latency_buckets: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
         # Callbacks
         self._callbacks: list[Callable[[str, dict[str, Any]], None]] = []
@@ -264,9 +260,7 @@ class MetricsCollector:
         with self._lock:
             self._rate_limit_wait[key] += wait_time
 
-        self._notify(
-            "rate_limit_wait", {"labels": labels.to_dict(), "wait_time": wait_time}
-        )
+        self._notify("rate_limit_wait", {"labels": labels.to_dict(), "wait_time": wait_time})
 
     def record_circuit_open(self, labels: MetricLabels) -> None:
         """Record circuit breaker opening.
@@ -349,9 +343,7 @@ class MetricsCollector:
                     result.append(MetricLabels(**parts))
             return result
 
-    def add_callback(
-        self, callback: Callable[[str, dict[str, Any]], None]
-    ) -> None:
+    def add_callback(self, callback: Callable[[str, dict[str, Any]], None]) -> None:
         """Add a callback for metric events.
 
         Args:
@@ -359,9 +351,7 @@ class MetricsCollector:
         """
         self._callbacks.append(callback)
 
-    def remove_callback(
-        self, callback: Callable[[str, dict[str, Any]], None]
-    ) -> None:
+    def remove_callback(self, callback: Callable[[str, dict[str, Any]], None]) -> None:
         """Remove a callback.
 
         Args:

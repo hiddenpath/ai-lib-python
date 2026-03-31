@@ -19,9 +19,7 @@ MOCK_HTTP_URL = os.getenv("MOCK_HTTP_URL", "http://localhost:4010")
 
 def _mock_available() -> bool:
     try:
-        r = httpx.get(
-            f"{MOCK_HTTP_URL.rstrip('/')}/health", timeout=2.0, trust_env=False
-        )
+        r = httpx.get(f"{MOCK_HTTP_URL.rstrip('/')}/health", timeout=2.0, trust_env=False)
         return r.status_code == 200
     except Exception:
         return False
@@ -50,9 +48,7 @@ async def test_chat_simple_via_mock() -> None:
 async def test_chat_custom_content_via_mock() -> None:
     """Chat with X-Mock-Content override."""
     # Use custom headers - AiClient may not expose raw headers; test via direct httpx
-    async with httpx.AsyncClient(
-        base_url=MOCK_HTTP_URL, timeout=10.0, trust_env=False
-    ) as http:
+    async with httpx.AsyncClient(base_url=MOCK_HTTP_URL, timeout=10.0, trust_env=False) as http:
         r = await http.post(
             "/v1/chat/completions",
             json={"model": "gpt-4o", "messages": [{"role": "user", "content": "Hi"}]},
@@ -68,9 +64,7 @@ async def test_chat_custom_content_via_mock() -> None:
 @pytest.mark.asyncio
 async def test_chat_tool_calls_via_mock() -> None:
     """Chat with X-Mock-Tool-Calls returns tool_calls."""
-    async with httpx.AsyncClient(
-        base_url=MOCK_HTTP_URL, timeout=10.0, trust_env=False
-    ) as http:
+    async with httpx.AsyncClient(base_url=MOCK_HTTP_URL, timeout=10.0, trust_env=False) as http:
         r = await http.post(
             "/v1/chat/completions",
             json={"model": "gpt-4o", "messages": [{"role": "user", "content": "Weather?"}]},

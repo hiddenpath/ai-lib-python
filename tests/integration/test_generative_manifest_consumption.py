@@ -42,9 +42,7 @@ def test_consume_latest_v2_generative_manifests() -> None:
             assert manifest.detect_api_style() == ApiStyle.OPENAI_COMPATIBLE
 
         assert manifest.multimodal is not None
-        caps = MultimodalCapabilities.from_config(
-            manifest.multimodal.model_dump(exclude_none=True)
-        )
+        caps = MultimodalCapabilities.from_config(manifest.multimodal.model_dump(exclude_none=True))
 
         assert caps.supports_input(Modality.TEXT)
         assert caps.supports_output(Modality.TEXT)

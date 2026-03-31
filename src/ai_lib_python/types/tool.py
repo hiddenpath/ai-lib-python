@@ -192,6 +192,7 @@ class ToolCall(BaseModel):
             "name": self.function_name,
             "input": self.arguments,
         }
+
     @staticmethod
     def to_message(tool_call: ToolCall, result: Any) -> Message:
         """Create a TOOL-role message from a tool call and its result.

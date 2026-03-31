@@ -136,16 +136,11 @@ async def main() -> None:
 
             # Add tool results
             for tool_call, result in tool_results:
-                messages.append(
-                    Message.tool_result(tool_call.id, json.dumps(result))
-                )
+                messages.append(Message.tool_result(tool_call.id, json.dumps(result)))
 
             # Get final response
             final_response = await (
-                client.chat()
-                .messages(messages)
-                .tools([weather_tool, search_tool])
-                .execute()
+                client.chat().messages(messages).tools([weather_tool, search_tool]).execute()
             )
 
             print(f"Assistant: {final_response.content}")

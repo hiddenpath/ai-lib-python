@@ -241,6 +241,5 @@ def weighted_average_vectors(
         raise ValueError("All vectors must have the same dimensions")
 
     return [
-        sum(v[i] * w for v, w in zip(vectors, normalized_weights, strict=True))
-        for i in range(dim)
+        sum(v[i] * w for v, w in zip(vectors, normalized_weights, strict=True)) for i in range(dim)
     ]

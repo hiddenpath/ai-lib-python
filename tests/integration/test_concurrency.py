@@ -23,14 +23,13 @@ class TestConcurrency:
 
         # Setup responses for 5 concurrent requests
         for i in range(5):
-            setup_mock_openai_response(httpx_mock, content=f"Response {i+1}")
+            setup_mock_openai_response(httpx_mock, content=f"Response {i + 1}")
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
 
         # Create concurrent tasks
         tasks = [
-            client.chat().messages([Message.user(f"Request {i+1}")]).execute()
-            for i in range(5)
+            client.chat().messages([Message.user(f"Request {i + 1}")]).execute() for i in range(5)
         ]
 
         # Wait for all to complete
@@ -39,7 +38,7 @@ class TestConcurrency:
         # Verify all responses
         assert len(responses) == 5
         for i, response in enumerate(responses):
-            assert response.content == f"Response {i+1}"
+            assert response.content == f"Response {i + 1}"
 
     @pytest.mark.asyncio
     async def test_max_inflight_limit(self, httpx_mock) -> None:
@@ -52,18 +51,14 @@ class TestConcurrency:
 
         # Build client with small max_inflight
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
-            AiClientBuilder()
-            .model("openai/gpt-4o")
-            .api_key("sk-test")
-            .max_inflight(3)
-            .build()
+            AiClientBuilder().model("openai/gpt-4o").api_key("sk-test").max_inflight(3).build()
         )
 
         # Create more concurrent tasks than max_inflight
         tasks = [
-            client.chat().messages([Message.user(f"Request {i+1}")]).execute()
-            for i in range(10)
+            client.chat().messages([Message.user(f"Request {i + 1}")]).execute() for i in range(10)
         ]
 
         # All should complete (respecting max_inflight internally)
@@ -84,7 +79,7 @@ class TestConcurrency:
         # Create concurrent streaming tasks
         async def collect_stream(i: int) -> str:
             events = []
-            async for event in client.chat().messages([Message.user(f"Stream {i+1}")]).stream():
+            async for event in client.chat().messages([Message.user(f"Stream {i + 1}")]).stream():
                 if event.is_content_delta:
                     events.append(event.as_content_delta.content)
             return "".join(events)
@@ -151,7 +146,9 @@ class TestConcurrency:
 
         # Create clients for different models
         openai_client = await AiClient.create("openai/gpt-4o", api_key="sk-test")
-        anthropic_client = await AiClient.create("anthropic/claude-3-5-sonnet", api_key="sk-ant-test")
+        anthropic_client = await AiClient.create(
+            "anthropic/claude-3-5-sonnet", api_key="sk-ant-test"
+        )
 
         # Concurrent requests to different models
         tasks = [
@@ -177,6 +174,7 @@ class TestConcurrency:
         setup_mock_anthropic_response(httpx_mock, content="Fallback used")
 
         from ai_lib_python.client import AiClientBuilder
+
         client = await (
             AiClientBuilder()
             .model("openai/gpt-4o")
@@ -262,6 +260,7 @@ class TestResourceManagement:
         )
 
         from tests.integration.conftest import setup_mock_openai_response
+
         setup_mock_openai_response(httpx_mock, content="Success")
 
         client = await AiClient.create("openai/gpt-4o", api_key="sk-test")

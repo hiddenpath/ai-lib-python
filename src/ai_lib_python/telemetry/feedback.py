@@ -313,7 +313,7 @@ class InMemoryFeedbackSink(FeedbackSink):
         """Store feedback event in memory."""
         self._events.append(event)
         if len(self._events) > self._max_events:
-            self._events = self._events[-self._max_events:]
+            self._events = self._events[-self._max_events :]
 
     def get_events(self) -> list[FeedbackEvent]:
         """Get all stored events."""

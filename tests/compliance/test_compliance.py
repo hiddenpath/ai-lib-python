@@ -53,7 +53,9 @@ def _load_provider_manifest(compliance_dir: Path, manifest_path: str) -> dict[st
         return yaml.safe_load(f)
 
 
-def _get_provider_classification(case: dict[str, Any], compliance_dir: Path) -> dict[str, Any] | None:
+def _get_provider_classification(
+    case: dict[str, Any], compliance_dir: Path
+) -> dict[str, Any] | None:
     """Extract error_classification from provider manifest if setup.manifest_path is set."""
     setup = case.get("setup")
     if not setup or not isinstance(setup, dict):
@@ -162,7 +164,9 @@ def _manifest_has_required_shape(manifest: dict[str, Any]) -> bool:
     """Minimal required shape for protocol_loading compliance."""
     if not isinstance(manifest.get("id"), str) or not manifest.get("id"):
         return False
-    if not isinstance(manifest.get("protocol_version"), str) or not manifest.get("protocol_version"):
+    if not isinstance(manifest.get("protocol_version"), str) or not manifest.get(
+        "protocol_version"
+    ):
         return False
     endpoint = manifest.get("endpoint")
     if not isinstance(endpoint, dict):
@@ -320,9 +324,7 @@ def run_message_building(
     expected_messages = expected_body.get("messages") or []
     expected_count = int(expected.get("message_count", len(expected_messages)))
 
-    assert messages == expected_messages, (
-        f"[{case_id}] {case_name}: normalized messages mismatch"
-    )
+    assert messages == expected_messages, f"[{case_id}] {case_name}: normalized messages mismatch"
     assert len(messages) == expected_count, (
         f"[{case_id}] {case_name}: message_count expected {expected_count}, got {len(messages)}"
     )
@@ -343,7 +345,9 @@ def run_parameter_mapping(
     manifest_path = setup.get("manifest_path")
     if isinstance(manifest_path, str):
         manifest = _load_provider_manifest(COMPLIANCE_DIR, manifest_path) or {}
-        parameters = manifest.get("parameters") if isinstance(manifest.get("parameters"), dict) else {}
+        parameters = (
+            manifest.get("parameters") if isinstance(manifest.get("parameters"), dict) else {}
+        )
         for key, value in parameters.items():
             if key not in provider_params and isinstance(value, dict) and "default" in value:
                 provider_params[key] = value["default"]
@@ -373,13 +377,14 @@ def run_stream_decode(
         for line in str(chunk).splitlines():
             if not line.startswith(prefix):
                 continue
-            payload = line[len(prefix):].strip()
+            payload = line[len(prefix) :].strip()
             if payload == done_signal:
                 done_received = True
                 continue
             if not payload:
                 continue
             import json
+
             frames.append(json.loads(payload))
 
     frame_count_cfg = expected.get("frame_count") or {}
@@ -497,9 +502,7 @@ def run_capability_guard(
     }.get(method, "")
     caps = manifest.get("capabilities")
     has_cap = False
-    if isinstance(caps, list):
-        has_cap = cap_key in caps
-    elif isinstance(caps, dict):
+    if isinstance(caps, list | dict):
         has_cap = cap_key in caps
     actual_code = "" if has_cap else "E1005"
     expected_code = str(expected.get("error_code", ""))
@@ -520,12 +523,7 @@ def run_advanced_endpoint_mapping(
     fallback = str(input_data.get("fallback", ""))
     manifest_raw = str(input_data.get("manifest", ""))
     manifest = yaml.safe_load(manifest_raw) if manifest_raw else {}
-    op = (
-        manifest.get("core", {})
-        .get("endpoint", {})
-        .get("endpoints", {})
-        .get(operation, {})
-    )
+    op = manifest.get("core", {}).get("endpoint", {}).get("endpoints", {}).get(operation, {})
     actual_path = str(op.get("path", fallback))
     actual_method = str(op.get("method", "POST")).upper()
     expected_path = str(expected.get("path", ""))

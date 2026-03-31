@@ -198,14 +198,12 @@ class ConnectionPool:
                     self._stats[provider] = PoolStats()
 
                 self._stats[provider].total_connections_created += 1
-                self._stats[provider].connection_times.append(
-                    time.time() - start_time
-                )
+                self._stats[provider].connection_times.append(time.time() - start_time)
                 # Keep only last 100 samples
                 if len(self._stats[provider].connection_times) > 100:
-                    self._stats[provider].connection_times = (
-                        self._stats[provider].connection_times[-100:]
-                    )
+                    self._stats[provider].connection_times = self._stats[provider].connection_times[
+                        -100:
+                    ]
 
             return self._clients[key]
 
@@ -294,9 +292,7 @@ class ConnectionPool:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(
-        self, exc_type: Any, exc_val: Any, exc_tb: Any
-    ) -> None:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.close()
 

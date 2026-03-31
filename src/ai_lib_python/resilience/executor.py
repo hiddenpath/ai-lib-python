@@ -123,23 +123,15 @@ class ResilientExecutor:
         self._name = name
 
         # Initialize components
-        self._retry = (
-            RetryPolicy(self._config.retry) if self._config.retry else None
-        )
+        self._retry = RetryPolicy(self._config.retry) if self._config.retry else None
         self._rate_limiter = (
-            RateLimiter(self._config.rate_limit)
-            if self._config.rate_limit
-            else None
+            RateLimiter(self._config.rate_limit) if self._config.rate_limit else None
         )
         self._circuit_breaker = (
-            CircuitBreaker(self._config.circuit_breaker)
-            if self._config.circuit_breaker
-            else None
+            CircuitBreaker(self._config.circuit_breaker) if self._config.circuit_breaker else None
         )
         self._backpressure = (
-            Backpressure(self._config.backpressure)
-            if self._config.backpressure
-            else None
+            Backpressure(self._config.backpressure) if self._config.backpressure else None
         )
 
     @property
@@ -260,13 +252,9 @@ class ResilientExecutor:
             # 1. Backpressure
             if self._backpressure:
                 async with self._backpressure.acquire():
-                    result = await self._execute_inner_with_stats(
-                        operation, on_retry, stats
-                    )
+                    result = await self._execute_inner_with_stats(operation, on_retry, stats)
             else:
-                result = await self._execute_inner_with_stats(
-                    operation, on_retry, stats
-                )
+                result = await self._execute_inner_with_stats(operation, on_retry, stats)
 
             stats.success = True
             return result, stats

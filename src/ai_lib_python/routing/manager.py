@@ -180,8 +180,7 @@ class ModelManager:
         return [
             m
             for m in self._models.values()
-            if m.capabilities.context_window
-            and m.capabilities.context_window >= min_tokens
+            if m.capabilities.context_window and m.capabilities.context_window >= min_tokens
         ]
 
     def load_from_config(self, config_path: str | Path) -> ModelManager:

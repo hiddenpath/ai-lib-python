@@ -253,16 +253,11 @@ def validate_protocol_version(
 
     # Check if version is supported
     if version not in versions:
-        result.add_error(
-            f"Unsupported protocol version: {version}. "
-            f"Runtime supports: {versions}"
-        )
+        result.add_error(f"Unsupported protocol version: {version}. Runtime supports: {versions}")
     else:
         # Check for version-specific warnings
         if version == "1.0":
-            result.add_warning(
-                "Protocol version 1.0 is deprecated. Consider upgrading to 1.5+"
-            )
+            result.add_warning("Protocol version 1.0 is deprecated. Consider upgrading to 1.5+")
 
     return result
 
@@ -313,9 +308,7 @@ def validate_streaming_config(
                 "capabilities.streaming is true"
             )
         else:
-            result.add_warning(
-                "capabilities.streaming is true but streaming config is missing"
-            )
+            result.add_warning("capabilities.streaming is true but streaming config is missing")
         return result
 
     if streaming is None:
@@ -336,9 +329,7 @@ def validate_streaming_config(
     # Check decoder
     if strict:
         if not decoder:
-            result.add_error(
-                "strict_streaming: streaming.decoder is required for streaming"
-            )
+            result.add_error("strict_streaming: streaming.decoder is required for streaming")
         else:
             # Check decoder format
             if isinstance(decoder, dict):
@@ -347,9 +338,7 @@ def validate_streaming_config(
                 format_val = getattr(decoder, "format", "")
 
             if not format_val or not str(format_val).strip():
-                result.add_error(
-                    "strict_streaming: streaming.decoder.format must be non-empty"
-                )
+                result.add_error("strict_streaming: streaming.decoder.format must be non-empty")
 
     # Check event mapping paths when no explicit event_map
     if not event_map:
@@ -370,18 +359,14 @@ def validate_streaming_config(
             if tooling is not None:
                 supports_tools = True
 
-            if supports_tools and (
-                not tool_call_path or not str(tool_call_path).strip()
-            ):
+            if supports_tools and (not tool_call_path or not str(tool_call_path).strip()):
                 result.add_error(
                     "strict_streaming: streaming.tool_call_path is required "
                     "for tools when streaming.event_map is empty"
                 )
         else:
             if not content_path:
-                result.add_warning(
-                    "streaming.content_path is recommended when event_map is empty"
-                )
+                result.add_warning("streaming.content_path is recommended when event_map is empty")
 
     return result
 

@@ -15,7 +15,11 @@ def _sample_mcp_tools() -> list[McpTool]:
         McpTool(
             name="read_file",
             description="Read a file from disk",
-            input_schema={"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]},
+            input_schema={
+                "type": "object",
+                "properties": {"path": {"type": "string"}},
+                "required": ["path"],
+            },
         ),
         McpTool(name="search", description="Search the web", input_schema=None),
         McpTool(name="exec_dangerous", description="Execute shell command"),
@@ -57,18 +61,14 @@ class TestMcpToolBridge:
 
     def test_mcp_result_to_protocol(self) -> None:
         bridge = McpToolBridge("srv")
-        result = McpToolResult(
-            content=[{"type": "text", "text": "file contents"}], is_error=False
-        )
+        result = McpToolResult(content=[{"type": "text", "text": "file contents"}], is_error=False)
         proto = bridge.mcp_result_to_protocol("call_123", result)
         assert proto["tool_use_id"] == "call_123"
         assert not proto["is_error"]
 
     def test_mcp_result_error(self) -> None:
         bridge = McpToolBridge("srv")
-        result = McpToolResult(
-            content=[{"type": "text", "text": "not found"}], is_error=True
-        )
+        result = McpToolResult(content=[{"type": "text", "text": "not found"}], is_error=True)
         proto = bridge.mcp_result_to_protocol("call_1", result)
         assert proto["is_error"]
         assert "not found" in proto["content"]["error"]

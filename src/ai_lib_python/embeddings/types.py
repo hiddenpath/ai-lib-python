@@ -218,9 +218,7 @@ class EmbeddingResponse:
         Returns:
             EmbeddingResponse instance
         """
-        embeddings = [
-            Embedding.from_openai_format(e) for e in data.get("data", [])
-        ]
+        embeddings = [Embedding.from_openai_format(e) for e in data.get("data", [])]
         usage_data = data.get("usage", {})
         usage = EmbeddingUsage(
             prompt_tokens=usage_data.get("prompt_tokens", 0),

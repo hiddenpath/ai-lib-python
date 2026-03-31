@@ -168,9 +168,7 @@ class Span:
         self.attributes.update(attributes)
         return self
 
-    def add_event(
-        self, name: str, attributes: dict[str, Any] | None = None
-    ) -> Span:
+    def add_event(self, name: str, attributes: dict[str, Any] | None = None) -> Span:
         """Add an event to the span.
 
         Args:

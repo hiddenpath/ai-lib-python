@@ -289,10 +289,7 @@ class MultiToolCallAssembler:
         Returns:
             Dictionary mapping turn IDs to tool call lists
         """
-        return {
-            turn_id: assembler.finalize()
-            for turn_id, assembler in self._assemblers.items()
-        }
+        return {turn_id: assembler.finalize() for turn_id, assembler in self._assemblers.items()}
 
     def reset(self) -> None:
         """Reset all assemblers."""

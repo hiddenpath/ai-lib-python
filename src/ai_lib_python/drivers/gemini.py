@@ -165,10 +165,19 @@ class GeminiDriver(ProviderDriver):
                 # Gemini: function_response with name (tool_call_id) and response
                 tool_id = getattr(m, "tool_call_id", None)
                 if tool_id and isinstance(m.content, str):
-                    contents.append({
-                        "role": "user",
-                        "parts": [{"functionResponse": {"name": tool_id, "response": {"result": m.content}}}],
-                    })
+                    contents.append(
+                        {
+                            "role": "user",
+                            "parts": [
+                                {
+                                    "functionResponse": {
+                                        "name": tool_id,
+                                        "response": {"result": m.content},
+                                    }
+                                }
+                            ],
+                        }
+                    )
                 continue
 
             gemini_role = "model" if role == "assistant" else "user"
@@ -176,7 +185,10 @@ class GeminiDriver(ProviderDriver):
             if isinstance(m.content, str):
                 parts: list[dict[str, Any]] = [{"text": m.content}]
             else:
-                parts = [{"text": b.text} if b.type == "text" else b.model_dump(by_alias=True) for b in m.content]
+                parts = [
+                    {"text": b.text} if b.type == "text" else b.model_dump(by_alias=True)
+                    for b in m.content
+                ]
 
             contents.append({"role": gemini_role, "parts": parts})
 

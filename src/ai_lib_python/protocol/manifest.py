@@ -18,12 +18,8 @@ class AuthConfig(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     type: str = Field(default="bearer", description="Auth type: bearer, api_key, etc.")
-    token_env: str | None = Field(
-        default=None, description="Environment variable for API key"
-    )
-    header_name: str | None = Field(
-        default=None, description="Custom header name for API key"
-    )
+    token_env: str | None = Field(default=None, description="Environment variable for API key")
+    header_name: str | None = Field(default=None, description="Custom header name for API key")
 
 
 class EndpointConfig(BaseModel):
@@ -57,9 +53,7 @@ class AvailabilityConfig(BaseModel):
     required: bool = Field(
         default=False, description="Whether provider must be reachable at startup"
     )
-    regions: list[str] = Field(
-        default_factory=lambda: ["global"], description="Available regions"
-    )
+    regions: list[str] = Field(default_factory=lambda: ["global"], description="Available regions")
     check: HealthCheckConfig | None = Field(default=None, description="Health check config")
 
 
@@ -95,9 +89,7 @@ class EventMapRule(BaseModel):
 
     match: str = Field(description="JSONPath-like match expression")
     emit: str = Field(description="Event type to emit")
-    fields: dict[str, str] = Field(
-        default_factory=dict, description="Field extraction mappings"
-    )
+    fields: dict[str, str] = Field(default_factory=dict, description="Field extraction mappings")
 
 
 class CandidateConfig(BaseModel):
@@ -105,12 +97,8 @@ class CandidateConfig(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    candidate_id_path: str | None = Field(
-        default=None, description="JSONPath to candidate ID"
-    )
-    fan_out: bool | None = Field(
-        default=None, description="Whether to fan out candidates"
-    )
+    candidate_id_path: str | None = Field(default=None, description="JSONPath to candidate ID")
+    fan_out: bool | None = Field(default=None, description="Whether to fan out candidates")
 
 
 class AccumulatorConfig(BaseModel):
@@ -118,9 +106,7 @@ class AccumulatorConfig(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    stateful_tool_parsing: bool = Field(
-        default=False, description="Enable stateful tool parsing"
-    )
+    stateful_tool_parsing: bool = Field(default=False, description="Enable stateful tool parsing")
     key_path: str | None = Field(default=None, description="JSONPath for accumulation key")
     flush_on: str | None = Field(default=None, description="Condition to flush accumulator")
 
@@ -135,9 +121,7 @@ class StreamingConfig(BaseModel):
     frame_selector: str | None = Field(default=None, description="Frame selection expression")
     candidate: CandidateConfig | None = Field(default=None, description="Candidate config")
     accumulator: AccumulatorConfig | None = Field(default=None, description="Accumulator config")
-    event_map: list[EventMapRule] = Field(
-        default_factory=list, description="Event mapping rules"
-    )
+    event_map: list[EventMapRule] = Field(default_factory=list, description="Event mapping rules")
     stop_condition: str | None = Field(default=None, description="Stop condition expression")
     extra_metadata_path: str | None = Field(default=None, description="Path to extra metadata")
     content_path: str | None = Field(default=None, description="Path to content field")
@@ -150,9 +134,7 @@ class RetryPolicy(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    strategy: str = Field(
-        default="exponential_backoff", description="Retry strategy"
-    )
+    strategy: str = Field(default="exponential_backoff", description="Retry strategy")
     max_retries: int | None = Field(default=None, description="Maximum retry attempts")
     min_delay_ms: int = Field(default=1000, description="Minimum delay in ms")
     max_delay_ms: int | None = Field(default=None, description="Maximum delay in ms")
@@ -172,16 +154,10 @@ class RateLimitHeaders(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     requests_limit: str | None = Field(default=None, description="Requests limit header")
-    requests_remaining: str | None = Field(
-        default=None, description="Remaining requests header"
-    )
-    requests_reset: str | None = Field(
-        default=None, description="Requests reset time header"
-    )
+    requests_remaining: str | None = Field(default=None, description="Remaining requests header")
+    requests_reset: str | None = Field(default=None, description="Requests reset time header")
     tokens_limit: str | None = Field(default=None, description="Tokens limit header")
-    tokens_remaining: str | None = Field(
-        default=None, description="Remaining tokens header"
-    )
+    tokens_remaining: str | None = Field(default=None, description="Remaining tokens header")
     tokens_reset: str | None = Field(default=None, description="Tokens reset time header")
     retry_after: str | None = Field(default=None, description="Retry-After header name")
 
@@ -215,9 +191,7 @@ class ToolingConfig(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    source_model: str | None = Field(
-        default=None, description="Source model for tool format"
-    )
+    source_model: str | None = Field(default=None, description="Source model for tool format")
     tool_use: ToolUseConfig | None = Field(default=None, description="Tool use extraction")
     notes: list[str] = Field(default_factory=list, description="Tooling notes")
 
@@ -229,9 +203,7 @@ class ServiceConfig(BaseModel):
 
     path: str = Field(description="Service endpoint path")
     method: str = Field(default="GET", description="HTTP method")
-    response_binding: str | None = Field(
-        default=None, description="Response data binding path"
-    )
+    response_binding: str | None = Field(default=None, description="Response data binding path")
 
 
 class TerminationConfig(BaseModel):
@@ -289,15 +261,9 @@ class ProtocolManifest(BaseModel):
     payload_format: str | None = Field(default=None, description="Payload format style")
 
     # API configuration
-    api_families: list[str] = Field(
-        default_factory=list, description="Supported API families"
-    )
-    default_api_family: str | None = Field(
-        default=None, description="Default API family"
-    )
-    endpoints: dict[str, Any] = Field(
-        default_factory=dict, description="Named endpoints"
-    )
+    api_families: list[str] = Field(default_factory=list, description="Supported API families")
+    default_api_family: str | None = Field(default=None, description="Default API family")
+    endpoints: dict[str, Any] = Field(default_factory=dict, description="Named endpoints")
     services: dict[str, ServiceConfig] = Field(
         default_factory=dict, description="Service endpoints"
     )
@@ -314,9 +280,7 @@ class ProtocolManifest(BaseModel):
     )
 
     # Streaming
-    streaming: StreamingConfig | None = Field(
-        default=None, description="Streaming configuration"
-    )
+    streaming: StreamingConfig | None = Field(default=None, description="Streaming configuration")
 
     # Capabilities
     capabilities: CapabilitiesConfig = Field(
@@ -344,9 +308,7 @@ class ProtocolManifest(BaseModel):
     )
 
     # Features
-    features: dict[str, Any] = Field(
-        default_factory=dict, description="Additional features"
-    )
+    features: dict[str, Any] = Field(default_factory=dict, description="Additional features")
     experimental_features: list[str] = Field(
         default_factory=list, description="Experimental features"
     )

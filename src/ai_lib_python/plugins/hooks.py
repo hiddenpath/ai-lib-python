@@ -150,9 +150,7 @@ class HookManager:
             Decorator function
         """
 
-        def decorator(
-            func: Callable[..., Awaitable[Any]]
-        ) -> Callable[..., Awaitable[Any]]:
+        def decorator(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
             self.register(hook_type, func, priority, name)
             return func
 

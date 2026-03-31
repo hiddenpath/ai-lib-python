@@ -50,11 +50,7 @@ async def main() -> None:
         print("\n\nStreaming with statistics:")
         print("-" * 50)
 
-        stream_iter, stats = await (
-            client.chat()
-            .user("Count from 1 to 5.")
-            .stream_with_stats()
-        )
+        stream_iter, stats = await client.chat().user("Count from 1 to 5.").stream_with_stats()
 
         async for event in stream_iter:
             if event.is_content_delta:

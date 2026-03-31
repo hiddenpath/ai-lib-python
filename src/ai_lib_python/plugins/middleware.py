@@ -117,9 +117,7 @@ class MiddlewareChain:
         self._middleware.append(middleware)
         return self
 
-    def use_before(
-        self, middleware: Middleware, before: type | str
-    ) -> MiddlewareChain:
+    def use_before(self, middleware: Middleware, before: type | str) -> MiddlewareChain:
         """Add middleware before another.
 
         Args:
@@ -140,9 +138,7 @@ class MiddlewareChain:
         self._middleware.insert(0, middleware)
         return self
 
-    def use_after(
-        self, middleware: Middleware, after: type | str
-    ) -> MiddlewareChain:
+    def use_after(self, middleware: Middleware, after: type | str) -> MiddlewareChain:
         """Add middleware after another.
 
         Args:

@@ -43,7 +43,9 @@ class RerankerClient:
         self._model = model
         self._api_key = api_key
         self._base_url = base_url.rstrip("/")
-        self._endpoint_path = endpoint_path if endpoint_path.startswith("/") else f"/{endpoint_path}"
+        self._endpoint_path = (
+            endpoint_path if endpoint_path.startswith("/") else f"/{endpoint_path}"
+        )
         self._timeout = timeout
 
     @classmethod

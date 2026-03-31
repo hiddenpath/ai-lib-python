@@ -456,4 +456,4 @@ class CustomGuardrail(Guardrail):
 
 ## API Reference
 
-See the [API documentation](../api/guardrails.md) for complete details on all classes and methods.
+See the [API documentation](api/guardrails.md) for complete details on all classes and methods.

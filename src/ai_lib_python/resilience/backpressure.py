@@ -219,7 +219,4 @@ class Backpressure:
     def __repr__(self) -> str:
         if self._semaphore is None:
             return "Backpressure(unlimited)"
-        return (
-            f"Backpressure("
-            f"inflight={self._current_inflight}/{self._config.max_concurrent})"
-        )
+        return f"Backpressure(inflight={self._current_inflight}/{self._config.max_concurrent})"

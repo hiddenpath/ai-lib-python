@@ -14,14 +14,14 @@ This guide covers advanced usage patterns and best practices for using ai-lib-py
 6. [Resilience Patterns](#resilience-patterns)
 7. [Error Handling](#error-handling)
 8. [Protocol Configuration](#protocol-configuration)
-9. [Model Routing & Selection](#model-routing--selection)
+9. [Model Routing & Selection](#model-routing-selection)
 10. [Stream Cancellation](#stream-cancellation)
 11. [User Feedback Collection](#user-feedback-collection)
 12. [Embeddings](#embeddings)
 13. [Response Caching](#response-caching)
 14. [Plugin System](#plugin-system)
 15. [Structured Output](#structured-output)
-16. [Telemetry & Observability](#telemetry--observability)
+16. [Telemetry & Observability](#telemetry-observability)
 17. [Best Practices](#best-practices)
 
 ## Installation and Setup
@@ -1191,6 +1191,8 @@ Here's the data:
 data = extract_json(text)
 print(data)  # {"name": "John", "age": 30}
 ```
+
+<a id="telemetry-observability"></a>
 
 ## Telemetry & Observability
 

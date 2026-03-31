@@ -70,7 +70,11 @@ class RetryConfig:
             return cls()
 
         jitter_str = retry_policy.get("jitter", "full")
-        jitter = JitterStrategy(jitter_str) if jitter_str in ("none", "full", "equal") else JitterStrategy.FULL
+        jitter = (
+            JitterStrategy(jitter_str)
+            if jitter_str in ("none", "full", "equal")
+            else JitterStrategy.FULL
+        )
 
         retry_on_status = set(retry_policy.get("retry_on_http_status", [429, 500]))
 
@@ -145,9 +149,7 @@ class RetryPolicy:
             return retry_after
 
         # Calculate base exponential delay
-        base_delay_ms = self._config.min_delay_ms * (
-            self._config.exponential_base ** attempt
-        )
+        base_delay_ms = self._config.min_delay_ms * (self._config.exponential_base**attempt)
 
         # Cap at max delay
         base_delay_ms = min(base_delay_ms, self._config.max_delay_ms)

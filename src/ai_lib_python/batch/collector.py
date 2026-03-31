@@ -106,9 +106,7 @@ class BatchCollector(Generic[T, R]):
         self._timers: dict[str, asyncio.Task[None]] = {}
         self._running = True
 
-    def set_executor(
-        self, executor: Callable[[list[T]], Awaitable[list[R]]]
-    ) -> None:
+    def set_executor(self, executor: Callable[[list[T]], Awaitable[list[R]]]) -> None:
         """Set the batch executor function.
 
         Args:
@@ -132,9 +130,7 @@ class BatchCollector(Generic[T, R]):
             raise RuntimeError("No executor set")
 
         # Determine group key
-        group_key = (
-            self._config.group_by(data) if self._config.group_by else "_default_"
-        )
+        group_key = self._config.group_by(data) if self._config.group_by else "_default_"
 
         # Create future for result
         loop = asyncio.get_event_loop()
@@ -155,9 +151,7 @@ class BatchCollector(Generic[T, R]):
             else:
                 # Start timer if not already running
                 if group_key not in self._timers or self._timers[group_key].done():
-                    self._timers[group_key] = asyncio.create_task(
-                        self._timer_flush(group_key)
-                    )
+                    self._timers[group_key] = asyncio.create_task(self._timer_flush(group_key))
 
         return await future
 

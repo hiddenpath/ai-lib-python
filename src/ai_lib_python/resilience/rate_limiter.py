@@ -232,9 +232,7 @@ class AdaptiveRateLimiter(RateLimiter):
             headers: Response headers
         """
         # Extract limit
-        limit_header = self._header_config.get(
-            "requests_limit", "x-ratelimit-limit-requests"
-        )
+        limit_header = self._header_config.get("requests_limit", "x-ratelimit-limit-requests")
         if limit_header in headers:
             try:
                 self._server_limit = int(headers[limit_header])

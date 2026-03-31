@@ -55,9 +55,7 @@ class SSEDecoder(Decoder):
         self._prefix = prefix
         self._done_signal = done_signal
 
-    async def decode(
-        self, byte_stream: AsyncIterator[bytes]
-    ) -> AsyncIterator[dict[str, Any]]:
+    async def decode(self, byte_stream: AsyncIterator[bytes]) -> AsyncIterator[dict[str, Any]]:
         """Decode SSE byte stream into JSON frames.
 
         Args:
@@ -144,9 +142,7 @@ class JsonLinesDecoder(Decoder):
         """
         self._delimiter = delimiter
 
-    async def decode(
-        self, byte_stream: AsyncIterator[bytes]
-    ) -> AsyncIterator[dict[str, Any]]:
+    async def decode(self, byte_stream: AsyncIterator[bytes]) -> AsyncIterator[dict[str, Any]]:
         """Decode JSON Lines byte stream into JSON frames.
 
         Args:
@@ -202,9 +198,7 @@ class AnthropicSSEDecoder(Decoder):
         """Initialize Anthropic SSE decoder."""
         self._delimiter = "\n\n"
 
-    async def decode(
-        self, byte_stream: AsyncIterator[bytes]
-    ) -> AsyncIterator[dict[str, Any]]:
+    async def decode(self, byte_stream: AsyncIterator[bytes]) -> AsyncIterator[dict[str, Any]]:
         """Decode Anthropic SSE byte stream.
 
         Args:

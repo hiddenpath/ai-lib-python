@@ -39,21 +39,12 @@ async def main() -> None:
             Message.user("Write a one-liner to read a file."),
         ]
 
-        response = await (
-            client.chat()
-            .messages(messages)
-            .max_tokens(100)
-            .execute()
-        )
+        response = await client.chat().messages(messages).max_tokens(100).execute()
         print(f"Python tip: {response.content}")
         print()
 
         # Method 3: Get response with statistics
-        response, stats = await (
-            client.chat()
-            .user("Hello!")
-            .execute_with_stats()
-        )
+        response, stats = await client.chat().user("Hello!").execute_with_stats()
         print(f"Response: {response.content}")
         print(f"Latency: {stats.latency_ms:.0f}ms")
         if stats.input_tokens and stats.output_tokens:

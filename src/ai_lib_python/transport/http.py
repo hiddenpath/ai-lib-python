@@ -122,9 +122,7 @@ class HttpTransport:
         self._proxy = proxy_value
 
         # Build auth headers
-        self._auth_headers = get_auth_header(
-            manifest.id, manifest, self._api_key
-        )
+        self._auth_headers = get_auth_header(manifest.id, manifest, self._api_key)
 
         # Client instance (lazy initialization)
         self._client: httpx.AsyncClient | None = None
@@ -334,6 +332,7 @@ class HttpTransport:
                     body = None
                     try:
                         import json as json_module
+
                         body = json_module.loads(body_text)
                     except Exception:
                         pass

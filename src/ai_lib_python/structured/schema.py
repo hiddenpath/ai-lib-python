@@ -247,9 +247,7 @@ class SchemaGenerator:
 
         return self
 
-    def allow_additional_properties(
-        self, allowed: bool | type = True
-    ) -> SchemaGenerator:
+    def allow_additional_properties(self, allowed: bool | type = True) -> SchemaGenerator:
         """Configure additional properties.
 
         Args:

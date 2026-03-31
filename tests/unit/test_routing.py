@@ -162,23 +162,17 @@ class TestModelSelectors:
             ModelInfo(
                 name="fast-cheap",
                 pricing=PricingInfo(0.1, 0.2),
-                performance=PerformanceMetrics(
-                    speed=SpeedTier.FAST, quality=QualityTier.BASIC
-                ),
+                performance=PerformanceMetrics(speed=SpeedTier.FAST, quality=QualityTier.BASIC),
             ),
             ModelInfo(
                 name="balanced",
                 pricing=PricingInfo(1.0, 2.0),
-                performance=PerformanceMetrics(
-                    speed=SpeedTier.BALANCED, quality=QualityTier.GOOD
-                ),
+                performance=PerformanceMetrics(speed=SpeedTier.BALANCED, quality=QualityTier.GOOD),
             ),
             ModelInfo(
                 name="slow-quality",
                 pricing=PricingInfo(10.0, 20.0),
-                performance=PerformanceMetrics(
-                    speed=SpeedTier.SLOW, quality=QualityTier.EXCELLENT
-                ),
+                performance=PerformanceMetrics(speed=SpeedTier.SLOW, quality=QualityTier.EXCELLENT),
             ),
         ]
 
@@ -307,14 +301,10 @@ class TestModelManager:
         """Test filtering by capability."""
         manager = ModelManager()
         manager.add_model(
-            ModelInfo(
-                name="m1", capabilities=ModelCapabilities(code_generation=True)
-            )
+            ModelInfo(name="m1", capabilities=ModelCapabilities(code_generation=True))
         )
         manager.add_model(
-            ModelInfo(
-                name="m2", capabilities=ModelCapabilities(code_generation=False)
-            )
+            ModelInfo(name="m2", capabilities=ModelCapabilities(code_generation=False))
         )
 
         filtered = manager.filter_by_capability("code")
@@ -390,12 +380,8 @@ class TestModelArray:
     def test_is_healthy(self) -> None:
         """Test cluster health check."""
         array = ModelArray("cluster")
-        array.add_endpoint(
-            ModelEndpoint("e1", "m", "http://a.com", healthy=False)
-        )
-        array.add_endpoint(
-            ModelEndpoint("e2", "m", "http://b.com", healthy=True)
-        )
+        array.add_endpoint(ModelEndpoint("e1", "m", "http://a.com", healthy=False))
+        array.add_endpoint(ModelEndpoint("e2", "m", "http://b.com", healthy=True))
 
         assert array.is_healthy() is True
 

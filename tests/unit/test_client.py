@@ -86,6 +86,7 @@ class TestCallStats:
 
         # Simulate some work
         import time
+
         time.sleep(0.01)
 
         stats.record_first_token()
@@ -98,10 +99,12 @@ class TestCallStats:
     def test_record_usage(self) -> None:
         """Test usage recording."""
         stats = CallStats()
-        stats.record_usage({
-            "prompt_tokens": 100,
-            "completion_tokens": 50,
-        })
+        stats.record_usage(
+            {
+                "prompt_tokens": 100,
+                "completion_tokens": 50,
+            }
+        )
 
         assert stats.prompt_tokens == 100
         assert stats.completion_tokens == 50
@@ -142,6 +145,7 @@ class TestChatRequestBuilder:
 
     def test_build_simple_payload(self) -> None:
         """Test building simple payload."""
+
         # Create a mock client
         class MockClient:
             _manifest = None
@@ -163,6 +167,7 @@ class TestChatRequestBuilder:
 
     def test_build_payload_with_tools(self) -> None:
         """Test building payload with tools."""
+
         class MockClient:
             _manifest = None
             _model_id = "gpt-4"
@@ -191,6 +196,7 @@ class TestChatRequestBuilder:
 
     def test_builder_chaining(self) -> None:
         """Test builder method chaining."""
+
         class MockClient:
             _manifest = None
             _model_id = "gpt-4"

@@ -46,14 +46,18 @@ class SimplePlugin(Plugin):
         return self._name
 
     async def on_request(
-        self, ctx: PluginContext, request: dict  # noqa: ARG002
+        self,
+        _ctx: PluginContext,
+        request: dict,
     ) -> dict:
         self.request_count += 1
         request["modified_by"] = self._name
         return request
 
     async def on_response(
-        self, ctx: PluginContext, response: dict  # noqa: ARG002
+        self,
+        _ctx: PluginContext,
+        response: dict,
     ) -> dict:
         self.response_count += 1
         return response
