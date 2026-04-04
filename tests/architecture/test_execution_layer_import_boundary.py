@@ -8,6 +8,8 @@ Keep in sync with `check_ep_boundary.py --python-root` in ai-protocol.
 from __future__ import annotations
 
 import re
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +26,14 @@ def _module_matrix_path() -> Path:
     root = _repo_root()
     return (
         (root / ".." / ".." / "ai-protocol" / "tests" / "compliance" / "ep-boundary" / "module-matrix.yaml")
+        .resolve()
+    )
+
+
+def _check_ep_boundary_script() -> Path:
+    root = _repo_root()
+    return (
+        (root / ".." / ".." / "ai-protocol" / "tests" / "compliance" / "ep-boundary" / "check_ep_boundary.py")
         .resolve()
     )
 
@@ -86,3 +96,18 @@ def test_execution_layer_packages_do_not_import_contact_modules() -> None:
             rel = path.relative_to(_repo_root())
             msg_lines.append(f"  {rel}:{lineno}: {line}")
         pytest.fail("\n".join(msg_lines))
+
+
+def test_check_ep_boundary_python_cli_ok() -> None:
+    """Runs ai-protocol ep-boundary script (execution trees + client/ AST)."""
+    script = _check_ep_boundary_script()
+    if not script.is_file():
+        pytest.skip(f"check_ep_boundary.py not found: {script}")
+    root = _repo_root()
+    proc = subprocess.run(
+        [sys.executable, str(script), "--python-root", str(root)],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert proc.returncode == 0, f"{proc.stdout}\n{proc.stderr}"
